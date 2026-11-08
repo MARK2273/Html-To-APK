@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+build/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Android build outputs & caches
+android/webview-template/app/build/
+android/webview-template/.gradle/
+android/webview-template/.idea/
+android/webview-template/local.properties
+*.iml
+.cxx/
+
+# Storage & Temporary Files
+storage/temp/
+storage/builds/
+storage/database.sqlite*
+storage/projects/*/source/
+
+# OS Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development

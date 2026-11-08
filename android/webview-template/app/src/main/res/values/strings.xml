@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HTML to APK App</string>
+    <string name="error_title">Unable to Load Page</string>
+    <string name="error_message">Please check your network connection or verify that the website files are packaged correctly.</string>
+    <string name="retry">Retry</string>
+</resources>
+
