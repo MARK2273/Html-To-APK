@@ -56,8 +56,8 @@ export class GradleService {
       };
 
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon']
-        : [task, '--stacktrace', '--no-daemon'];
+        ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true']
+        : [task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true'];
 
       const cmd = isWindows ? 'cmd.exe' : gradlewPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
