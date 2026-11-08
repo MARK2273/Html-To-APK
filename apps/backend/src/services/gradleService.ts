@@ -63,7 +63,6 @@ export class GradleService {
       // Unset JVM hook and proxy variables that break Gradle IPC and process pipes
       delete env._JAVA_OPTIONS;
       delete env.JAVA_TOOL_OPTIONS;
-      delete env.GRADLE_OPTS;
       delete env.HTTP_PROXY;
       delete env.http_proxy;
       delete env.HTTPS_PROXY;
@@ -71,9 +70,12 @@ export class GradleService {
       delete env.ALL_PROXY;
       delete env.all_proxy;
 
+      // Cap single JVM memory via GRADLE_OPTS when running with --no-daemon
+      env.GRADLE_OPTS = '-Xmx160m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--stacktrace']
-        : [task, '--stacktrace'];
+        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']
+        : [task, '--no-daemon', '--stacktrace'];
 
       const cmd = isWindows ? 'cmd.exe' : execPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);

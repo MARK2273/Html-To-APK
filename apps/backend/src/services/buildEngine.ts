@@ -31,6 +31,11 @@ export class BuildEngine extends EventEmitter {
   private activeBuilds: Map<string, { abort: () => void }> = new Map();
   private buildQueue: QueuedBuild[] = [];
   private isProcessingQueue = false;
+  private static activeLogs: Map<string, string[]> = new Map();
+
+  static getActiveLogs(buildId: string): string[] | undefined {
+    return this.activeLogs.get(buildId);
+  }
 
   static getInstance(): BuildEngine {
     if (!this.instance) {
@@ -188,6 +193,7 @@ export class BuildEngine extends EventEmitter {
   ) {
     const buildId = build.id;
     const logs: string[] = [];
+    BuildEngine.activeLogs.set(buildId, logs);
     const startTime = Date.now();
     let tempBuildDir = '';
 
@@ -398,6 +404,8 @@ export class BuildEngine extends EventEmitter {
       );
 
       emitProgress('Build Failed', totalSteps, totalSteps, 100, 'failed', errorMessage);
+    } finally {
+      BuildEngine.activeLogs.delete(buildId);
     }
   }
 
@@ -405,7 +413,12 @@ export class BuildEngine extends EventEmitter {
     const db = getDb();
     const row = db.prepare('SELECT * FROM builds WHERE id = ?').get(buildId) as any;
     if (!row) return null;
-    return this.mapRowToBuild(row);
+    const build = this.mapRowToBuild(row);
+    const active = this.activeLogs.get(buildId);
+    if (active && active.length > 0 && !build.logs) {
+      build.logs = active.slice(-80).join('\n');
+    }
+    return build;
   }
 
   static listBuilds(projectId?: string): BuildRecord[] {
