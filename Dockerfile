@@ -75,4 +75,4 @@ EXPOSE 10000
 
 # Start Backend Server with memory cap on Node process via tini init
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["node", "--max-old-space-size=64", "apps/backend/dist/index.js"]
+CMD ["node", "--expose-gc", "--max-old-space-size=48", "apps/backend/dist/index.js"]

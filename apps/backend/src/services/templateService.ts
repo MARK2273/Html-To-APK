@@ -31,9 +31,17 @@ export class TemplateService {
     const localPropertiesContent = `sdk.dir=${normalizedSdk}\n`;
     fs.writeFileSync(path.join(buildDir, 'local.properties'), localPropertiesContent);
 
-    // 2. Configure gradle.properties with container memory constraints (omit org.gradle.jvmargs to avoid single-use daemon fork)
+    // 2. Configure gradle.properties with container memory constraints & in-process Kotlin compiler
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
-    let gradleProps = 'android.useAndroidX=true\norg.gradle.parallel=false\norg.gradle.workers.max=1\norg.gradle.vfs.watch=false\n';
+    let gradleProps = [
+      'org.gradle.jvmargs=-Xms64m -Xmx200m -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
+      'kotlin.compiler.execution.strategy=in-process',
+      'android.useAndroidX=true',
+      'org.gradle.parallel=false',
+      'org.gradle.workers.max=1',
+      'org.gradle.vfs.watch=false',
+      'android.builder.sdkDownload=false'
+    ].join('\n') + '\n';
     if (javaHome) {
       const normalizedJava = javaHome.replace(/\\/g, '/');
       gradleProps += `org.gradle.java.home=${normalizedJava}\n`;

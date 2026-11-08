@@ -70,12 +70,27 @@ export class GradleService {
       delete env.ALL_PROXY;
       delete env.all_proxy;
 
-      // Cap single JVM memory via GRADLE_OPTS when running with --no-daemon
-      env.GRADLE_OPTS = '-Xmx200m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      // Free Node heap before launching Gradle
+      if ((global as any).gc) {
+        try {
+          (global as any).gc();
+        } catch {}
+      }
+
+      // Cleanup any prior orphaned Gradle processes on Linux before starting
+      if (!isWindows) {
+        try {
+          const { execSync } = require('node:child_process');
+          execSync('pkill -9 -f "org.gradle.launcher" || true', { stdio: 'ignore' });
+        } catch {}
+      }
+
+      // Cap launcher JVM memory via GRADLE_OPTS so client wrapper remains tiny (~35MB)
+      env.GRADLE_OPTS = '-Xms16m -Xmx48m -XX:MaxMetaspaceSize=48m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
 
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']
-        : [task, '--no-daemon', '--stacktrace'];
+        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace', '-Dkotlin.compiler.execution.strategy=in-process']
+        : [task, '--no-daemon', '--stacktrace', '-Dkotlin.compiler.execution.strategy=in-process'];
 
       const cmd = isWindows ? 'cmd.exe' : execPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
