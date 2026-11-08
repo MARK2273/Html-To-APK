@@ -53,6 +53,7 @@ export class GradleService {
         ANDROID_HOME: options.androidSdkPath || process.env.ANDROID_HOME,
         ANDROID_SDK_ROOT: options.androidSdkPath || process.env.ANDROID_SDK_ROOT,
         JAVA_HOME: options.javaHome || process.env.JAVA_HOME,
+        JAVA_OPTS: '-Xmx384m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
         NO_PROXY: 'localhost,127.0.0.1',
         no_proxy: 'localhost,127.0.0.1'
       };
@@ -69,8 +70,8 @@ export class GradleService {
       delete env.all_proxy;
 
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--stacktrace']
-        : [task, '--stacktrace'];
+        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']
+        : [task, '--no-daemon', '--stacktrace'];
 
       const cmd = isWindows ? 'cmd.exe' : gradlewPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);

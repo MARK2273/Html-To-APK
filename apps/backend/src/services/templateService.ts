@@ -31,12 +31,9 @@ export class TemplateService {
     const localPropertiesContent = `sdk.dir=${normalizedSdk}\n`;
     fs.writeFileSync(path.join(buildDir, 'local.properties'), localPropertiesContent);
 
-    // 2. Configure gradle.properties with container-optimized memory settings
+    // 2. Configure gradle.properties without org.gradle.jvmargs to allow in-process execution with --no-daemon
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
-    let gradleProps = [
-      'org.gradle.jvmargs=-Xmx384m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
-      'android.useAndroidX=true'
-    ].join('\n') + '\n';
+    let gradleProps = 'android.useAndroidX=true\n';
     if (javaHome) {
       const normalizedJava = javaHome.replace(/\\/g, '/');
       gradleProps += `org.gradle.java.home=${normalizedJava}\n`;
