@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Modern Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="calculator">
+    <div id="display" class="display">0</div>
+    <div class="keypad">
+      <button onclick="clearDisplay()" class="action">C</button>
+      <button onclick="appendOp('/')" class="op">÷</button>
+      <button onclick="appendOp('*')" class="op">×</button>
+      <button onclick="deleteLast()" class="action">⌫</button>
+      <button onclick="appendNum('7')">7</button>
+      <button onclick="appendNum('8')">8</button>
+      <button onclick="appendNum('9')">9</button>
+      <button onclick="appendOp('-')" class="op">−</button>
+      <button onclick="appendNum('4')">4</button>
+      <button onclick="appendNum('5')">5</button>
+      <button onclick="appendNum('6')">6</button>
+      <button onclick="appendOp('+')" class="op">+</button>
+      <button onclick="appendNum('1')">1</button>
+      <button onclick="appendNum('2')">2</button>
+      <button onclick="appendNum('3')">3</button>
+      <button onclick="calculate()" class="equals">=</button>
+      <button onclick="appendNum('0')" class="zero">0</button>
+      <button onclick="appendNum('.')">.</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+

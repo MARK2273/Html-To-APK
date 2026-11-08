@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QuickTask Mobile</title>
+  <style>
+    * { box-sizing: border-box; touch-action: manipulation; }
+    body {
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #1e293b;
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid #334155;
+    }
+    h1 { margin: 0; font-size: 22px; font-weight: 700; color: #38bdf8; }
+    p.sub { margin: 4px 0 0; font-size: 12px; color: #94a3b8; }
+    main { flex: 1; padding: 16px; max-width: 500px; margin: 0 auto; width: 100%; }
+    .input-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #f8fafc;
+      font-size: 14px;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: #38bdf8; }
+    button.add-btn {
+      padding: 0 20px;
+      border-radius: 12px;
+      border: none;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
+      font-weight: 600;
+    }
+    ul.task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    li.task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+    }
+    li.task-item.done span.text {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #10b981;
+      cursor: pointer;
+    }
+    button.del-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>QuickTask</h1>
+    <p class="sub">Local Storage Task Manager on Android WebView</p>
+  </header>
+  <main>
+    <div class="input-box">
+      <input type="text" id="taskInput" placeholder="Add a new task...">
+      <button class="add-btn" onclick="addTask()">Add</button>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" onclick="setFilter('active')">Active</button>
+      <button class="filter-btn" onclick="setFilter('completed')">Completed</button>
+    </div>
+    <ul class="task-list" id="taskList"></ul>
+  </main>
+  <script>
+    let filter = 'all';
+    let tasks = JSON.parse(localStorage.getItem('quicktask_tasks') || '[]');
+
+    function save() {
+      localStorage.setItem('quicktask_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function addTask() {
+      const input = document.getElementById('taskInput');
+      const text = input.value.trim();
+      if (!text) return;
+      tasks.unshift({ id: Date.now(), text, completed: false });
+      input.value = '';
+      if (navigator.vibrate) navigator.vibrate(20);
+      save();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      if (navigator.vibrate) navigator.vibrate(15);
+      save();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      if (navigator.vibrate) navigator.vibrate(30);
+      save();
+    }
+
+    function setFilter(f) {
+      filter = f;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase() === f);
+      });
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      const filtered = tasks.filter(t => {
+        if (filter === 'active') return !t.completed;
+        if (filter === 'completed') return t.completed;
+        return true;
+      });
+      if (filtered.length === 0) {
+        list.innerHTML = '<li style="text-align:center;color:#64748b;padding:30px;">No tasks here yet.</li>';
+        return;
+      }
+      filtered.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'task-item' + (t.completed ? ' done' : '');
+        li.innerHTML = `
+          <div class="task-left">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
+            <span class="text">${escapeHtml(t.text)}</span>
+          </div>
+          <button class="del-btn" onclick="deleteTask(${t.id})">✕</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    document.getElementById('taskInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addTask();
+    });
+
+    if (tasks.length === 0) {
+      tasks = [
+        { id: 1, text: 'Install generated APK on Android', completed: false },
+        { id: 2, text: 'Test offline mode & localStorage', completed: true },
+        { id: 3, text: 'Deploy frontend to Vercel', completed: true }
+      ];
+      save();
+    } else {
+      render();
+    }
+  </script>
+</body>
+</html>
+
