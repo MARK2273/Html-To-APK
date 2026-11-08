@@ -36,3 +36,4 @@ export function getBuildsDir(): string {
 export function getTempDir(): string {
   return ensureDir(path.join(getStorageDir(), 'temp'));
 }
+
