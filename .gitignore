@@ -5,7 +5,8 @@ node_modules/
 
 # Production build outputs
 dist/
-build/
+/build/
+!apps/frontend/src/components/build/
 dist-ssr/
 *.local
 
