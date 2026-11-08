@@ -40,8 +40,11 @@ COPY apps/frontend/package*.json ./apps/frontend/
 
 RUN npm install
 
-# Copy source code and Android template
+# Copy source code, native shims, and Android template
 COPY . .
+
+# Compile native socket filter shim to protect Gradle IPC from cloud port detectors
+RUN gcc -O2 -shared -fPIC native/libgradle_shim.c -o /opt/libgradle_shim.so -ldl
 
 # Normalize line endings for gradlew and make it executable
 RUN sed -i 's/\r$//' android/webview-template/gradlew && chmod +x android/webview-template/gradlew
