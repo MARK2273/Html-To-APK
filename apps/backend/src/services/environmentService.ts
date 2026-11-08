@@ -3,6 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { EnvironmentStatus } from '../types/index.js';
+import { getAndroidTemplateDir } from '../utils/paths.js';
 
 export class EnvironmentService {
   private static cachedStatus: EnvironmentStatus | null = null;
@@ -124,7 +125,7 @@ export class EnvironmentService {
     }
 
     // Check template wrapper
-    const templateWrapperPath = path.resolve(process.cwd(), '../../android/webview-template/gradlew');
+    const templateWrapperPath = path.join(getAndroidTemplateDir(), 'gradlew');
     const wrapperAvailable = fs.existsSync(templateWrapperPath) || fs.existsSync(templateWrapperPath + '.bat');
 
     const isReady = javaValid && androidSdkValid && (gradleInstalled || wrapperAvailable);

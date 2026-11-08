@@ -10,7 +10,7 @@ import { SigningService, SigningConfig } from './signingService.js';
 import { EnvironmentService } from './environmentService.js';
 import { BuildRecord, BuildProgressEvent, BuildType, BuildStatus } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
-import { getStorageDir, getBuildsDir, getTempDir } from '../utils/paths.js';
+import { getStorageDir, getBuildsDir, getTempDir, getAndroidTemplateDir } from '../utils/paths.js';
 
 export interface StartBuildOptions {
   projectId: string;
@@ -43,7 +43,7 @@ export class BuildEngine extends EventEmitter {
   }
 
   private getTemplateDir(): string {
-    return path.resolve(process.cwd(), '../../android/webview-template');
+    return getAndroidTemplateDir();
   }
 
   async startBuild(options: StartBuildOptions): Promise<BuildRecord> {

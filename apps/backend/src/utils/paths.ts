@@ -37,3 +37,10 @@ export function getTempDir(): string {
   return ensureDir(path.join(getStorageDir(), 'temp'));
 }
 
+export function getAndroidTemplateDir(): string {
+  if (process.cwd().endsWith('backend')) {
+    return path.resolve(process.cwd(), '../../android/webview-template');
+  }
+  return path.resolve(process.cwd(), 'android/webview-template');
+}
+
