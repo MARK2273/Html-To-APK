@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy
+FROM eclipse-temurin:17-jdk-jammy
 
 # Avoid prompts during apt installs
 ENV DEBIAN_FRONTEND=noninteractive
