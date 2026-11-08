@@ -3,14 +3,10 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs';
 import { ProjectController } from '../controllers/projectController.js';
-
-const uploadDir = path.resolve(process.cwd(), '../../storage/temp/uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+import { getUploadsDir } from '../utils/paths.js';
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
+  destination: (_req, _file, cb) => cb(null, getUploadsDir()),
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${uniqueSuffix}-${file.originalname}`);

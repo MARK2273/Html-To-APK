@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Logger } from '../utils/logger.js';
+import { getStorageDir, ensureDir } from '../utils/paths.js';
 
 let dbInstance: DatabaseSync | null = null;
 
@@ -10,11 +11,7 @@ export function getDb(): DatabaseSync {
     return dbInstance;
   }
 
-  const storageDir = path.resolve(process.cwd(), '../../storage');
-  if (!fs.existsSync(storageDir)) {
-    fs.mkdirSync(storageDir, { recursive: true });
-  }
-
+  const storageDir = ensureDir(getStorageDir());
   const dbPath = path.join(storageDir, 'database.sqlite');
   Logger.info(`Initializing SQLite database at: ${dbPath}`);
 

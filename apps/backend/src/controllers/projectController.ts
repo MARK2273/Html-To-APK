@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { ProjectService } from '../services/projectService.js';
 import { isSafePath } from '../utils/security.js';
 import { Logger } from '../utils/logger.js';
+import { getProjectsDir, ensureDir } from '../utils/paths.js';
 
 export class ProjectController {
   static create(req: Request, res: Response) {
@@ -78,10 +79,7 @@ export class ProjectController {
       }
 
       // Individual files
-      const sourceDir = path.resolve(process.cwd(), '../../storage/projects', projectId, 'source');
-      if (!fs.existsSync(sourceDir)) {
-        fs.mkdirSync(sourceDir, { recursive: true });
-      }
+      const sourceDir = ensureDir(path.join(getProjectsDir(), projectId, 'source'));
 
       for (const file of files) {
         // preserve relative path if client sent webkitRelativePath in body or header
@@ -114,7 +112,7 @@ export class ProjectController {
         return res.status(400).json({ success: false, error: 'No icon file uploaded' });
       }
 
-      const projectDir = path.resolve(process.cwd(), '../../storage/projects', projectId);
+      const projectDir = ensureDir(path.join(getProjectsDir(), projectId));
       const iconPath = path.join(projectDir, `icon${path.extname(file.originalname)}`);
       fs.copyFileSync(file.path, iconPath);
       fs.unlinkSync(file.path);
@@ -139,7 +137,7 @@ export class ProjectController {
     try {
       const projectId = String(req.params.id);
       const subPath = req.params[0] || '';
-      const sourceDir = path.resolve(process.cwd(), '../../storage/projects', projectId, 'source');
+      const sourceDir = path.join(getProjectsDir(), projectId, 'source');
 
       if (!fs.existsSync(sourceDir)) {
         return res.status(404).send('Project source files not found.');

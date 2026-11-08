@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { Project } from '../types/index.js';
 import { ManifestGenerator } from './manifestGenerator.js';
 import { Logger } from '../utils/logger.js';
+import { getProjectsDir } from '../utils/paths.js';
 
 export class TemplateService {
   /**
@@ -122,7 +123,7 @@ object AppConfig {
     }
     fs.mkdirSync(assetsWwwDir, { recursive: true });
 
-    const projectSourceDir = path.resolve(process.cwd(), '../../storage/projects', project.id, 'source');
+    const projectSourceDir = path.join(getProjectsDir(), project.id, 'source');
     if (fs.existsSync(projectSourceDir)) {
       Logger.info(`Copying web files from ${projectSourceDir} to ${assetsWwwDir}`);
       this.copyDirectoryRecursive(projectSourceDir, assetsWwwDir);

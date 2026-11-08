@@ -6,6 +6,7 @@ import { Project, ProjectPermissions, WebViewConfig } from '../types/index.js';
 import { validatePackageName } from '../utils/security.js';
 import { ZipService, ExtractedWebsiteInfo } from './zipService.js';
 import { Logger } from '../utils/logger.js';
+import { getProjectsDir } from '../utils/paths.js';
 
 const defaultPermissions: ProjectPermissions = {
   internet: true,
@@ -36,11 +37,7 @@ const defaultWebViewConfig: WebViewConfig = {
 
 export class ProjectService {
   private static getProjectsDir(): string {
-    const dir = path.resolve(process.cwd(), '../../storage/projects');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    return dir;
+    return getProjectsDir();
   }
 
   static createProject(data: Partial<Project>): Project {

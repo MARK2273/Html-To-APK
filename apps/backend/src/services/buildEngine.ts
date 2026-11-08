@@ -10,6 +10,7 @@ import { SigningService, SigningConfig } from './signingService.js';
 import { EnvironmentService } from './environmentService.js';
 import { BuildRecord, BuildProgressEvent, BuildType, BuildStatus } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
+import { getStorageDir, getBuildsDir, getTempDir } from '../utils/paths.js';
 
 export interface StartBuildOptions {
   projectId: string;
@@ -30,21 +31,15 @@ export class BuildEngine extends EventEmitter {
   }
 
   private getStorageDir(): string {
-    const dir = path.resolve(process.cwd(), '../../storage');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    return dir;
+    return getStorageDir();
   }
 
   private getBuildsDir(): string {
-    const dir = path.join(this.getStorageDir(), 'builds');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    return dir;
+    return getBuildsDir();
   }
 
   private getTempDir(): string {
-    const dir = path.join(this.getStorageDir(), 'temp');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    return dir;
+    return getTempDir();
   }
 
   private getTemplateDir(): string {
