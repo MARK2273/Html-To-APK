@@ -58,13 +58,6 @@ RUN gcc -O2 -shared -fPIC native/libgradle_shim.c -o /opt/libgradle_shim.so -ldl
 # Normalize line endings for gradlew and make it executable
 RUN sed -i 's/\r$//' android/webview-template/gradlew && chmod +x android/webview-template/gradlew
 
-# Pre-warm Android SDK & Gradle cache during Docker build (runs with full builder resources)
-RUN echo "sdk.dir=/opt/android-sdk" > android/webview-template/local.properties \
-    && cd android/webview-template \
-    && gradle assembleDebug --stacktrace --no-daemon \
-    && rm -f local.properties \
-    && rm -rf app/build
-
 # Build Backend TypeScript
 RUN npm --prefix apps/backend run build
 
