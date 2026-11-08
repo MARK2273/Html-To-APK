@@ -28,23 +28,25 @@ export class GradleService {
   ): Promise<GradleBuildResult> {
     return new Promise((resolve) => {
       const isWindows = os.platform() === 'win32';
+      const systemGradle = !isWindows && fs.existsSync('/opt/gradle/bin/gradle') ? '/opt/gradle/bin/gradle' : undefined;
       const gradlewName = isWindows ? 'gradlew.bat' : 'gradlew';
       const gradlewPath = path.join(projectDir, gradlewName);
+      const execPath = systemGradle || gradlewPath;
 
-      if (!fs.existsSync(gradlewPath)) {
+      if (!fs.existsSync(execPath)) {
         return resolve({
           success: false,
           logs: [],
-          error: `Gradle wrapper not found at ${gradlewPath}`
+          error: `Gradle executable not found at ${execPath}`
         });
       }
 
       // Ensure executable permissions on Linux / macOS
       if (!isWindows) {
         try {
-          fs.chmodSync(gradlewPath, 0o755);
+          fs.chmodSync(execPath, 0o755);
         } catch (e: any) {
-          Logger.warn(`Failed to chmod gradlew: ${e.message}`);
+          Logger.warn(`Failed to chmod ${execPath}: ${e.message}`);
         }
       }
 
@@ -73,7 +75,7 @@ export class GradleService {
         ? ['/c', 'gradlew.bat', task, '--stacktrace']
         : [task, '--stacktrace'];
 
-      const cmd = isWindows ? 'cmd.exe' : gradlewPath;
+      const cmd = isWindows ? 'cmd.exe' : execPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
 
       const child = spawn(cmd, args, {

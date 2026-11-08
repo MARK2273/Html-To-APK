@@ -33,7 +33,7 @@ export class TemplateService {
 
     // 2. Configure gradle.properties with container memory constraints
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
-    let gradleProps = 'org.gradle.jvmargs=-Xmx384m -XX:+UseSerialGC -Dfile.encoding=UTF-8\nandroid.useAndroidX=true\n';
+    let gradleProps = 'org.gradle.jvmargs=-Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=112m -Dfile.encoding=UTF-8\nandroid.useAndroidX=true\n';
     if (javaHome) {
       const normalizedJava = javaHome.replace(/\\/g, '/');
       gradleProps += `org.gradle.java.home=${normalizedJava}\n`;

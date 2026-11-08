@@ -26,6 +26,14 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && mv /tmp/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest \
     && rm -rf /tmp/cmdline-tools*
 
+# 2b. Setup Gradle 8.7 binary directly to eliminate wrapper JVM memory overhead
+RUN wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip -O /tmp/gradle.zip \
+    && unzip -q /tmp/gradle.zip -d /opt \
+    && mv /opt/gradle-8.7 /opt/gradle \
+    && rm -f /tmp/gradle.zip
+ENV GRADLE_HOME=/opt/gradle
+ENV PATH=${PATH}:${GRADLE_HOME}/bin
+
 # 3. Accept Android SDK licenses & install API 34 + Build Tools
 RUN yes | sdkmanager --licenses \
     && sdkmanager "platforms;android-34" "build-tools;34.0.0"
@@ -43,11 +51,19 @@ RUN npm install
 # Copy source code, native shims, and Android template
 COPY . .
 
-# Compile native socket filter shim to protect Gradle IPC from cloud port detectors
-RUN gcc -O2 -shared -fPIC native/libgradle_shim.c -o /opt/libgradle_shim.so -ldl
+# Compile native socket filter shim and preload globally to protect Gradle IPC from cloud port detectors
+RUN gcc -O2 -shared -fPIC native/libgradle_shim.c -o /opt/libgradle_shim.so -ldl \
+    && echo '/opt/libgradle_shim.so' > /etc/ld.so.preload
 
 # Normalize line endings for gradlew and make it executable
 RUN sed -i 's/\r$//' android/webview-template/gradlew && chmod +x android/webview-template/gradlew
+
+# Pre-warm Android SDK & Gradle cache during Docker build (runs with full builder resources)
+RUN echo "sdk.dir=/opt/android-sdk" > android/webview-template/local.properties \
+    && cd android/webview-template \
+    && gradle assembleDebug --stacktrace --no-daemon \
+    && rm -f local.properties \
+    && rm -rf app/build
 
 # Build Backend TypeScript
 RUN npm --prefix apps/backend run build
@@ -57,5 +73,5 @@ ENV PORT=10000
 ENV NODE_ENV=production
 EXPOSE 10000
 
-# Start Backend Server
-CMD ["node", "apps/backend/dist/index.js"]
+# Start Backend Server with memory cap on Node process
+CMD ["node", "--max-old-space-size=64", "apps/backend/dist/index.js"]
