@@ -71,7 +71,7 @@ export class GradleService {
       delete env.all_proxy;
 
       // Cap single JVM memory via GRADLE_OPTS when running with --no-daemon
-      env.GRADLE_OPTS = '-Xmx160m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      env.GRADLE_OPTS = '-Xmx200m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
 
       const args = isWindows
         ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']
