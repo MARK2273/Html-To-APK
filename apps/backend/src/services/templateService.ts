@@ -31,9 +31,16 @@ export class TemplateService {
     const localPropertiesContent = `sdk.dir=${normalizedSdk}\n`;
     fs.writeFileSync(path.join(buildDir, 'local.properties'), localPropertiesContent);
 
-    // 2. Configure gradle.properties with java home
+    // 2. Configure gradle.properties with container-optimized memory and network settings
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
-    let gradleProps = 'org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8\nandroid.useAndroidX=true\n';
+    let gradleProps = [
+      'org.gradle.jvmargs=-Xmx384m -XX:+UseSerialGC -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true',
+      'org.gradle.daemon=false',
+      'GRADLE_DAEMON_BIND_ADDRESS=127.0.0.1',
+      'android.useAndroidX=true',
+      'org.gradle.parallel=false',
+      'org.gradle.vfs.watch=false'
+    ].join('\n') + '\n';
     if (javaHome) {
       const normalizedJava = javaHome.replace(/\\/g, '/');
       gradleProps += `org.gradle.java.home=${normalizedJava}\n`;
