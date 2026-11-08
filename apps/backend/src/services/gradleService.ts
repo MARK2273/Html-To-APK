@@ -52,12 +52,22 @@ export class GradleService {
         ...process.env,
         ANDROID_HOME: options.androidSdkPath || process.env.ANDROID_HOME,
         ANDROID_SDK_ROOT: options.androidSdkPath || process.env.ANDROID_SDK_ROOT,
-        JAVA_HOME: options.javaHome || process.env.JAVA_HOME
+        JAVA_HOME: options.javaHome || process.env.JAVA_HOME,
+        NO_PROXY: 'localhost,127.0.0.1',
+        no_proxy: 'localhost,127.0.0.1'
       };
 
+      // Unset cloud proxy variables for local Gradle daemon IPC
+      delete env.HTTP_PROXY;
+      delete env.http_proxy;
+      delete env.HTTPS_PROXY;
+      delete env.https_proxy;
+      delete env.ALL_PROXY;
+      delete env.all_proxy;
+
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true']
-        : [task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true'];
+        ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true', '-Dhttp.nonProxyHosts="localhost|127.0.0.1"', '-Dhttps.nonProxyHosts="localhost|127.0.0.1"']
+        : [task, '--stacktrace', '--no-daemon', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true', '-Dhttp.nonProxyHosts=localhost|127.0.0.1', '-Dhttps.nonProxyHosts=localhost|127.0.0.1'];
 
       const cmd = isWindows ? 'cmd.exe' : gradlewPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
