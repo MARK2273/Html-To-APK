@@ -15,9 +15,33 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// Body Parsers
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Body Parsers - handle both standalone Express and serverless environments (like Vercel where req.body is pre-parsed)
+app.use((req, res, next) => {
+  if (req.body !== undefined && req.body !== null && Object.keys(req.body).length > 0) {
+    if (typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch {
+        // keep string
+      }
+    }
+    return next();
+  }
+  return express.json({ limit: '50mb' })(req, res, (err) => {
+    // If body-parser fails because Vercel already consumed stream or body is pre-parsed
+    if (err && req.body) {
+      return next();
+    }
+    next(err);
+  });
+});
+
+app.use((req, res, next) => {
+  if (req.body !== undefined && req.body !== null && Object.keys(req.body).length > 0) {
+    return next();
+  }
+  return express.urlencoded({ extended: true, limit: '50mb' })(req, res, next);
+});
 
 // Health Check
 app.get(['/health', '/api/health'], (_req, res) => {
