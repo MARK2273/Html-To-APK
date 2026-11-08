@@ -53,14 +53,14 @@ export class GradleService {
         ANDROID_HOME: options.androidSdkPath || process.env.ANDROID_HOME,
         ANDROID_SDK_ROOT: options.androidSdkPath || process.env.ANDROID_SDK_ROOT,
         JAVA_HOME: options.javaHome || process.env.JAVA_HOME,
-        GRADLE_DAEMON_BIND_ADDRESS: '127.0.0.1',
-        GRADLE_OPTS: '-Xmx384m -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true',
-        _JAVA_OPTIONS: '-Xmx384m -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true',
         NO_PROXY: 'localhost,127.0.0.1',
         no_proxy: 'localhost,127.0.0.1'
       };
 
-      // Unset cloud proxy variables for local Gradle daemon IPC
+      // Unset JVM hook and proxy variables that break Gradle IPC and process pipes
+      delete env._JAVA_OPTIONS;
+      delete env.JAVA_TOOL_OPTIONS;
+      delete env.GRADLE_OPTS;
       delete env.HTTP_PROXY;
       delete env.http_proxy;
       delete env.HTTPS_PROXY;
@@ -69,8 +69,8 @@ export class GradleService {
       delete env.all_proxy;
 
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon', '--no-parallel', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true']
-        : [task, '--stacktrace', '--no-daemon', '--no-parallel', '-Dorg.gradle.daemon=false', '-Djava.net.preferIPv4Stack=true'];
+        ? ['/c', 'gradlew.bat', task, '--stacktrace']
+        : [task, '--stacktrace'];
 
       const cmd = isWindows ? 'cmd.exe' : gradlewPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
