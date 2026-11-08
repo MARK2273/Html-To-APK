@@ -59,7 +59,7 @@ export class GradleService {
         ? ['/c', 'gradlew.bat', task, '--stacktrace', '--no-daemon']
         : [task, '--stacktrace', '--no-daemon'];
 
-      const cmd = isWindows ? 'cmd.exe' : `./${gradlewName}`;
+      const cmd = isWindows ? 'cmd.exe' : gradlewPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);
 
       const child = spawn(cmd, args, {

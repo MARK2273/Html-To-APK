@@ -1,0 +1,13 @@
+node_modules/
+apps/*/node_modules/
+dist/
+apps/*/dist/
+storage/temp/
+storage/builds/
+storage/database.sqlite*
+storage/projects/*/source/
+.git/
+.gradle/
+android/webview-template/.gradle/
+android/webview-template/app/build/
+android/webview-template/local.properties
