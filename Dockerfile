@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
     ca-certificates \
+    tini \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
@@ -66,5 +67,6 @@ ENV PORT=10000
 ENV NODE_ENV=production
 EXPOSE 10000
 
-# Start Backend Server with memory cap on Node process
+# Start Backend Server with memory cap on Node process via tini init
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "--max-old-space-size=64", "apps/backend/dist/index.js"]

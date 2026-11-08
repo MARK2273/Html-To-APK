@@ -5,6 +5,7 @@ import buildRoutes from './routes/buildRoutes.js';
 import systemRoutes from './routes/systemRoutes.js';
 import { getDb } from './database/db.js';
 import { EnvironmentService } from './services/environmentService.js';
+import { BuildEngine } from './services/buildEngine.js';
 import { Logger } from './utils/logger.js';
 
 export const app = express();
@@ -72,6 +73,7 @@ export function initApp() {
   if (isInitialized) return;
   try {
     getDb();
+    BuildEngine.cleanupOrphanedBuilds();
     const env = EnvironmentService.checkEnvironment();
     Logger.info(`Environment Ready: ${env.isReady}`);
     if (!env.isReady) {

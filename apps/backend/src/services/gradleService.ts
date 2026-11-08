@@ -84,6 +84,18 @@ export class GradleService {
         shell: false
       });
 
+      // 10-minute safety timeout to prevent stuck child processes
+      const timeoutMs = 10 * 60 * 1000;
+      const killTimer = setTimeout(() => {
+        Logger.warn(`Gradle build timed out after ${timeoutMs / 1000}s. Terminating...`);
+        try {
+          child.kill('SIGTERM');
+          setTimeout(() => {
+            if (!child.killed) child.kill('SIGKILL');
+          }, 5000);
+        } catch {}
+      }, timeoutMs);
+
       const logs: string[] = [];
       let totalTasks = 30;
       let completedTasks = 0;
@@ -109,6 +121,7 @@ export class GradleService {
       child.stderr.on('data', handleOutput);
 
       child.on('error', (err) => {
+        clearTimeout(killTimer);
         Logger.error(`Gradle process spawn error: ${err.message}`);
         resolve({
           success: false,
@@ -118,6 +131,7 @@ export class GradleService {
       });
 
       child.on('close', (code) => {
+        clearTimeout(killTimer);
         if (code === 0) {
           Logger.info('Gradle build succeeded.');
 

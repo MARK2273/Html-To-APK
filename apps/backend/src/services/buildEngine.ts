@@ -19,9 +19,18 @@ export interface StartBuildOptions {
   generateAab?: boolean;
 }
 
+interface QueuedBuild {
+  buildRecord: BuildRecord;
+  project: any;
+  signingConfig?: SigningConfig;
+  generateAab: boolean;
+}
+
 export class BuildEngine extends EventEmitter {
   private static instance: BuildEngine;
   private activeBuilds: Map<string, { abort: () => void }> = new Map();
+  private buildQueue: QueuedBuild[] = [];
+  private isProcessingQueue = false;
 
   static getInstance(): BuildEngine {
     if (!this.instance) {
@@ -62,6 +71,11 @@ export class BuildEngine extends EventEmitter {
 
     const buildId = uuidv4();
     const startTime = new Date().toISOString();
+    const isBusy = this.isProcessingQueue;
+    const initialStatus: BuildStatus = isBusy ? 'pending' : 'running';
+    const initialLog = isBusy
+      ? `[QUEUE] Build queued (position #${this.buildQueue.length + 1}). Waiting for active build to finish...\n`
+      : '';
 
     const db = getDb();
     const insertStmt = db.prepare(`
@@ -74,9 +88,9 @@ export class BuildEngine extends EventEmitter {
       buildId,
       projectId,
       buildType,
-      'running',
+      initialStatus,
       startTime,
-      '',
+      initialLog,
       JSON.stringify(project)
     );
 
@@ -84,18 +98,86 @@ export class BuildEngine extends EventEmitter {
       id: buildId,
       projectId,
       buildType,
-      status: 'running',
+      status: initialStatus,
       startTime,
-      logs: '',
+      logs: initialLog,
       configSnapshot: JSON.stringify(project)
     };
 
-    // Run build asynchronously
-    this.executeBuildPipeline(buildRecord, project, signingConfig, generateAab).catch((err) => {
-      Logger.error(`Build ${buildId} failed with unhandled exception: ${err.message}`);
+    this.buildQueue.push({
+      buildRecord,
+      project,
+      signingConfig,
+      generateAab
     });
 
+    if (isBusy) {
+      Logger.info(`Build ${buildId} queued (position: #${this.buildQueue.length}).`);
+      const queuePos = this.buildQueue.length;
+      const event: BuildProgressEvent = {
+        buildId,
+        stage: `Queued (position #${queuePos})`,
+        stepIndex: 0,
+        totalSteps: 8,
+        status: 'pending',
+        progressPercent: 0,
+        durationMs: 0
+      };
+      this.emit(`progress:${buildId}`, event);
+      this.emit('progress', event);
+    } else {
+      this.processQueue().catch((err) => {
+        Logger.error(`Queue processing error: ${err.message}`);
+      });
+    }
+
     return buildRecord;
+  }
+
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue) return;
+    this.isProcessingQueue = true;
+
+    try {
+      while (this.buildQueue.length > 0) {
+        const item = this.buildQueue.shift();
+        if (!item) break;
+
+        const { buildRecord, project, signingConfig, generateAab } = item;
+
+        if (buildRecord.status !== 'running') {
+          buildRecord.status = 'running';
+          const db = getDb();
+          db.prepare('UPDATE builds SET status = ? WHERE id = ?').run('running', buildRecord.id);
+        }
+
+        try {
+          await this.executeBuildPipeline(buildRecord, project, signingConfig, generateAab);
+        } catch (err: any) {
+          Logger.error(`Build ${buildRecord.id} unhandled failure: ${err.message}`);
+        }
+      }
+    } finally {
+      this.isProcessingQueue = false;
+    }
+  }
+
+  static cleanupOrphanedBuilds(): void {
+    try {
+      const db = getDb();
+      const result = db.prepare(`
+        UPDATE builds 
+        SET status = 'failed', 
+            error_message = 'Build interrupted by server restart',
+            end_time = datetime('now')
+        WHERE status IN ('running', 'pending')
+      `).run();
+      if (result.changes > 0) {
+        Logger.info(`Cleaned up ${result.changes} orphaned build(s) from previous server run.`);
+      }
+    } catch (err: any) {
+      Logger.warn(`Failed to cleanup orphaned builds: ${err.message}`);
+    }
   }
 
   private async executeBuildPipeline(
