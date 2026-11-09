@@ -29,6 +29,7 @@ router.delete('/:id', ProjectController.delete);
 // File management & uploads
 router.post('/:id/upload', upload.array('files'), ProjectController.uploadFiles);
 router.post('/:id/icon', upload.single('icon'), ProjectController.uploadIcon);
+router.get('/:id/icon', ProjectController.getIcon);
 router.get('/:id/files', ProjectController.getFiles);
 
 // Live preview endpoint

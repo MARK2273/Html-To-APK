@@ -124,6 +124,23 @@ export class ProjectController {
     }
   }
 
+  static getIcon(req: Request, res: Response) {
+    try {
+      const projectId = String(req.params.id);
+      const projectDir = path.join(getProjectsDir(), projectId);
+      const candidates = ['icon.png', 'icon.jpg', 'icon.jpeg', 'icon.webp'];
+      for (const c of candidates) {
+        const p = path.join(projectDir, c);
+        if (fs.existsSync(p)) {
+          return res.sendFile(p);
+        }
+      }
+      res.status(404).json({ success: false, error: 'Icon not found' });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
   static getFiles(req: Request, res: Response) {
     try {
       const info = ProjectService.getProjectFiles(String(req.params.id));

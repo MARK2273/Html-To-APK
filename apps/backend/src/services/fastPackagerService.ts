@@ -196,12 +196,52 @@ export class FastPackagerService {
       zip.addFile('assets/app-config.json', Buffer.from(JSON.stringify(appConfig, null, 2), 'utf-8'));
       onLog(`[FAST PACK] Configured app: title="${appConfig.appName}", entry="${appConfig.entryPoint}", orientation="${appConfig.orientation}".`);
 
-      // 4. Write unaligned APK
-      onProgress('Writing APK package', 82);
+      // 4. Inject Custom Application Icon (if provided)
+      let resolvedIconPath: string | null = null;
+      if (project.iconPath && fs.existsSync(project.iconPath)) {
+        resolvedIconPath = project.iconPath;
+      } else {
+        const projectDir = path.join(getProjectsDir(), project.id);
+        const candidates = ['icon.png', 'icon.jpg', 'icon.jpeg', 'icon.webp'];
+        for (const c of candidates) {
+          const p = path.join(projectDir, c);
+          if (fs.existsSync(p)) {
+            resolvedIconPath = p;
+            break;
+          }
+        }
+      }
+
+      if (resolvedIconPath && fs.existsSync(resolvedIconPath)) {
+        onProgress('Injecting application icon', 80);
+        onLog(`[FAST PACK] Injecting custom application icon from: ${path.basename(resolvedIconPath)}`);
+        const iconBuffer = fs.readFileSync(resolvedIconPath);
+
+        const iconDestinations = [
+          'res/mipmap-mdpi/ic_launcher.png',
+          'res/mipmap-hdpi/ic_launcher.png',
+          'res/mipmap-xhdpi/ic_launcher.png',
+          'res/mipmap-xxhdpi/ic_launcher.png',
+          'res/mipmap-xxxhdpi/ic_launcher.png',
+          'res/mipmap-mdpi/ic_launcher_round.png',
+          'res/mipmap-hdpi/ic_launcher_round.png',
+          'res/mipmap-xhdpi/ic_launcher_round.png',
+          'res/mipmap-xxhdpi/ic_launcher_round.png',
+          'res/mipmap-xxxhdpi/ic_launcher_round.png'
+        ];
+
+        for (const dest of iconDestinations) {
+          zip.addFile(dest, iconBuffer);
+        }
+        onLog(`[FAST PACK] Custom launcher icon successfully applied to ${iconDestinations.length} screen densities.`);
+      }
+
+      // 5. Write unaligned APK
+      onProgress('Writing APK package', 83);
       zip.writeZip(unalignedApk);
 
-      // 5. Run zipalign
-      onProgress('Aligning package boundaries (zipalign)', 86);
+      // 6. Run zipalign
+      onProgress('Aligning package boundaries (zipalign)', 87);
       const zipalignPath = this.findTool('zipalign', androidSdkPath);
       onLog(`[FAST PACK] Running zipalign: ${zipalignPath}`);
 

@@ -152,8 +152,22 @@ public final class AppConfig {
     }
 
     // 8. Custom Icon support
+    let resolvedIconPath: string | null = null;
     if (project.iconPath && fs.existsSync(project.iconPath)) {
-      this.applyCustomIcon(project.iconPath, buildDir);
+      resolvedIconPath = project.iconPath;
+    } else {
+      const projectDir = path.join(getProjectsDir(), project.id);
+      for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+        const candidate = path.join(projectDir, `icon${ext}`);
+        if (fs.existsSync(candidate)) {
+          resolvedIconPath = candidate;
+          break;
+        }
+      }
+    }
+
+    if (resolvedIconPath && fs.existsSync(resolvedIconPath)) {
+      this.applyCustomIcon(resolvedIconPath, buildDir);
     }
 
     return buildDir;
@@ -165,6 +179,13 @@ public final class AppConfig {
   private static applyCustomIcon(iconPath: string, buildDir: string) {
     try {
       const resDir = path.join(buildDir, 'app', 'src', 'main', 'res');
+      
+      // Remove anydpi-v26 adaptive vector xmls so Android uses raster PNG icons on all devices
+      const anyDpiDir = path.join(resDir, 'mipmap-anydpi-v26');
+      if (fs.existsSync(anyDpiDir)) {
+        fs.rmSync(anyDpiDir, { recursive: true, force: true });
+      }
+
       const mipmapFolders = [
         'mipmap-mdpi',
         'mipmap-hdpi',

@@ -122,8 +122,12 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shadow-inner">
-                      <Smartphone className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shadow-inner overflow-hidden shrink-0">
+                      {p.iconPath ? (
+                        <img src={api.getIconUrl(p.id)} alt={p.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Smartphone className="w-5 h-5 text-stone-500" />
+                      )}
                     </div>
                     <div>
                       <h4 className="font-semibold text-sm text-stone-900 truncate max-w-[160px]">

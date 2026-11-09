@@ -46,6 +46,22 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
           </div>
 
           <div className="space-y-2.5 text-xs">
+            <div className="flex items-center justify-between py-1.5 border-b border-stone-200/50">
+              <span className="text-stone-500">App Icon:</span>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden flex items-center justify-center shadow-xs">
+                  {project.iconPath ? (
+                    <img src={api.getIconUrl(project.id)} alt="Icon" className="w-full h-full object-cover" />
+                  ) : (
+                    <Smartphone className="w-3.5 h-3.5 text-stone-400" />
+                  )}
+                </div>
+                <span className="text-stone-700 font-medium text-[11px]">
+                  {project.iconPath ? 'Custom Uploaded' : 'Default Icon'}
+                </span>
+              </div>
+            </div>
+
             <div className="flex justify-between py-1 border-b border-stone-200/50">
               <span className="text-stone-500">App Name:</span>
               <span className="font-medium text-stone-900">{project.name}</span>

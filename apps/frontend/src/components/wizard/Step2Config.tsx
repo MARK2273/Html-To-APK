@@ -11,8 +11,16 @@ interface Step2ConfigProps {
 const PACKAGE_NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/;
 
 export const Step2Config: React.FC<Step2ConfigProps> = ({ project, onUpdate }) => {
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(() => {
+    return project.iconPath ? api.getIconUrl(project.id) : null;
+  });
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+
+  React.useEffect(() => {
+    if (project.iconPath && !iconPreview) {
+      setIconPreview(api.getIconUrl(project.id));
+    }
+  }, [project.iconPath, project.id]);
 
   const isPackageValid = PACKAGE_NAME_REGEX.test(project.packageName);
 

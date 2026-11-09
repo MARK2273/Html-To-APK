@@ -142,6 +142,10 @@ export const api = {
     return `${API_BASE}/builds/${buildId}/download`;
   },
 
+  getIconUrl(projectId: string): string {
+    return `${API_BASE}/projects/${projectId}/icon?t=${Date.now()}`;
+  },
+
   getPreviewUrl(projectId: string, entryPoint: string = 'index.html'): string {
     return `${API_BASE}/projects/${projectId}/preview/${entryPoint}`;
   }
