@@ -10,7 +10,7 @@ import { SigningService, SigningConfig } from './signingService.js';
 import { EnvironmentService } from './environmentService.js';
 import { BuildRecord, BuildProgressEvent, BuildType, BuildStatus } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
-import { getStorageDir, getBuildsDir, getTempDir, getAndroidTemplateDir } from '../utils/paths.js';
+import { getStorageDir, getBuildsDir, getProjectsDir, getTempDir, getAndroidTemplateDir } from '../utils/paths.js';
 
 export interface StartBuildOptions {
   projectId: string;
@@ -180,6 +180,17 @@ export class BuildEngine extends EventEmitter {
       if (result.changes > 0) {
         Logger.info(`Cleaned up ${result.changes} orphaned build(s) from previous server run.`);
       }
+
+      // Purge leftover temp build workspaces on server boot to free up disk and memory
+      const tempDir = getTempDir();
+      if (fs.existsSync(tempDir)) {
+        const entries = fs.readdirSync(tempDir);
+        for (const entry of entries) {
+          try {
+            fs.rmSync(path.join(tempDir, entry), { recursive: true, force: true });
+          } catch {}
+        }
+      }
     } catch (err: any) {
       Logger.warn(`Failed to cleanup orphaned builds: ${err.message}`);
     }
@@ -329,7 +340,7 @@ export class BuildEngine extends EventEmitter {
         fs.copyFileSync(gradleResult.aabPath, savedAabPath);
       }
 
-      // Clean temporary build directory safely
+      // Clean temporary build directory immediately
       try {
         if (tempBuildDir && fs.existsSync(tempBuildDir)) {
           fs.rmSync(tempBuildDir, { recursive: true, force: true });
@@ -337,6 +348,17 @@ export class BuildEngine extends EventEmitter {
         }
       } catch (cleanErr: any) {
         Logger.warn(`Failed to clean temp build dir: ${cleanErr.message}`);
+      }
+
+      // Remove uploaded website source files once APK has been created to free memory & storage
+      try {
+        const projectSourceDir = path.join(getProjectsDir(), project.id, 'source');
+        if (fs.existsSync(projectSourceDir)) {
+          fs.rmSync(projectSourceDir, { recursive: true, force: true });
+          appendLog('Uploaded website source files purged to free storage.');
+        }
+      } catch (cleanSourceErr: any) {
+        Logger.warn(`Failed to purge source dir: ${cleanSourceErr.message}`);
       }
 
       const durationMs = Date.now() - startTime;
@@ -405,7 +427,30 @@ export class BuildEngine extends EventEmitter {
 
       emitProgress('Build Failed', totalSteps, totalSteps, 100, 'failed', errorMessage);
     } finally {
+      // 1. Ensure temp build dir is completely removed
+      try {
+        if (tempBuildDir && fs.existsSync(tempBuildDir)) {
+          fs.rmSync(tempBuildDir, { recursive: true, force: true });
+        }
+      } catch {}
+
+      // 2. Terminate Gradle processes immediately after build so no daemon idles in memory
+      try {
+        if (process.platform !== 'win32') {
+          const { execSync } = require('node:child_process');
+          execSync('pkill -9 -f "org.gradle.launcher" || true', { stdio: 'ignore' });
+        }
+      } catch {}
+
+      // 3. Clear active logs buffer from memory
       BuildEngine.activeLogs.delete(buildId);
+
+      // 4. Force V8 garbage collection to free Node memory back to OS
+      if ((global as any).gc) {
+        try {
+          (global as any).gc();
+        } catch {}
+      }
     }
   }
 

@@ -85,8 +85,12 @@ export class GradleService {
         } catch {}
       }
 
-      // Cap launcher JVM memory via GRADLE_OPTS so client wrapper remains tiny (~35MB)
-      env.GRADLE_OPTS = '-Xms16m -Xmx48m -XX:MaxMetaspaceSize=48m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      // Cap launcher JVM memory via GRADLE_OPTS only on Linux containers, not on local Windows
+      if (!isWindows) {
+        env.GRADLE_OPTS = '-Xms16m -Xmx48m -XX:MaxMetaspaceSize=48m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      } else {
+        delete env.GRADLE_OPTS;
+      }
 
       const args = isWindows
         ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']

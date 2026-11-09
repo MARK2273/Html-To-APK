@@ -31,10 +31,19 @@ export class TemplateService {
     const localPropertiesContent = `sdk.dir=${normalizedSdk}\n`;
     fs.writeFileSync(path.join(buildDir, 'local.properties'), localPropertiesContent);
 
-    // 2. Configure gradle.properties with container memory constraints
+    // 2. Configure gradle.properties with container/local memory constraints
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
+    const isWindows = process.platform === 'win32';
+    const isRender = !!process.env.RENDER || fs.existsSync('/opt/android-sdk');
+
+    // On local Windows: generous memory so builds never fail with Metaspace OOM
+    // On Render container: calibrated memory allowing 220MB Metaspace and 160MB heap within 512MB RAM
+    const jvmArgs = (!isRender && isWindows)
+      ? 'org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8'
+      : 'org.gradle.jvmargs=-Xms32m -Xmx160m -XX:MaxMetaspaceSize=220m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+
     let gradleProps = [
-      'org.gradle.jvmargs=-Xms64m -Xmx220m -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
+      jvmArgs,
       'android.useAndroidX=true',
       'org.gradle.parallel=false',
       'org.gradle.workers.max=1',
