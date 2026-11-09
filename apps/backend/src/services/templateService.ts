@@ -40,7 +40,7 @@ export class TemplateService {
     // On Render container: strictly calibrated memory keeping total footprint within 512MB RAM
     const jvmArgs = (!isRender && isWindows)
       ? 'org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8'
-      : 'org.gradle.jvmargs=-Xms32m -Xmx120m -XX:MaxMetaspaceSize=175m -XX:ReservedCodeCacheSize=24m -XX:CICompilerCount=2 -Xss384k -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      : 'org.gradle.jvmargs=-Xms32m -Xmx96m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=20m -XX:CICompilerCount=2 -Xss256k -XX:+UseSerialGC -Dfile.encoding=UTF-8';
 
     let gradleProps = [
       jvmArgs,

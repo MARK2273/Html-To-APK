@@ -71,6 +71,7 @@ RUN npm --prefix apps/backend run build
 # Default environment configuration
 ENV PORT=10000
 ENV NODE_ENV=production
+ENV MALLOC_ARENA_MAX=2
 EXPOSE 10000
 
 # Start Backend Server with memory cap on Node process via tini init

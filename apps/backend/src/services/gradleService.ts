@@ -85,9 +85,10 @@ export class GradleService {
         } catch {}
       }
 
-      // Cap launcher JVM memory via GRADLE_OPTS only on Linux containers, not on local Windows
+      // Cap launcher JVM memory via GRADLE_OPTS and restrict glibc memory arenas on Linux containers
       if (!isWindows) {
         env.GRADLE_OPTS = '-Xms16m -Xmx32m -XX:MaxMetaspaceSize=32m -XX:ReservedCodeCacheSize=16m -XX:CICompilerCount=2 -Xss256k -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+        env.MALLOC_ARENA_MAX = '2';
       } else {
         delete env.GRADLE_OPTS;
       }
