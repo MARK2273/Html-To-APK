@@ -4,6 +4,7 @@ import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -66,6 +67,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppConfig.init(this);
+        if (AppConfig.APP_NAME != null && !AppConfig.APP_NAME.trim().isEmpty()) {
+            setTitle(AppConfig.APP_NAME);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(AppConfig.APP_NAME);
+            }
+        }
+        if ("portrait".equalsIgnoreCase(AppConfig.ORIENTATION)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else if ("landscape".equalsIgnoreCase(AppConfig.ORIENTATION)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
         setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webView);

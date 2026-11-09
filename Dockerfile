@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     curl \
     unzip \
+    zip \
     git \
     wget \
     build-essential \
@@ -59,10 +60,13 @@ RUN gcc -O2 -shared -fPIC native/libgradle_shim.c -o /opt/libgradle_shim.so -ldl
 # Normalize line endings for gradlew and make it executable
 RUN sed -i 's/\r$//' android/webview-template/gradlew && chmod +x android/webview-template/gradlew
 
-# Pre-cache Android Gradle Plugin, Kotlin, and dependencies into /root/.gradle during Docker build
+# Pre-build Android base template APK and keystore during Docker build (builder has 4GB+ RAM)
 RUN cd android/webview-template \
     && echo "sdk.dir=/opt/android-sdk" > local.properties \
     && gradle assembleDebug --no-daemon --stacktrace \
+    && mkdir -p /app/android \
+    && cp app/build/outputs/apk/debug/app-debug.apk /app/android/base-template.apk \
+    && (cp /root/.android/debug.keystore /app/android/debug.keystore 2>/dev/null || keytool -genkey -v -keystore /app/android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US") \
     && rm -rf app/build build .gradle local.properties
 
 # Build Backend TypeScript

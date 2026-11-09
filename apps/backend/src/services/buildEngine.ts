@@ -8,6 +8,7 @@ import { TemplateService } from './templateService.js';
 import { GradleService } from './gradleService.js';
 import { SigningService, SigningConfig } from './signingService.js';
 import { EnvironmentService } from './environmentService.js';
+import { FastPackagerService } from './fastPackagerService.js';
 import { BuildRecord, BuildProgressEvent, BuildType, BuildStatus } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
 import { getStorageDir, getBuildsDir, getProjectsDir, getTempDir, getAndroidTemplateDir } from '../utils/paths.js';
@@ -247,72 +248,103 @@ export class BuildEngine extends EventEmitter {
       }
       appendLog(`Found ${filesInfo.totalFiles} files (${(filesInfo.totalSize / 1024).toFixed(1)} KB). Default entry: ${project.entryPoint}`);
 
-      // Step 2: Preparing Android project
-      emitProgress('Preparing Android project', 2, totalSteps, 25);
-      appendLog('[STEP 2/8] Creating temporary isolated build workspace...');
+      // Step 2: Preparing Android build
       const env = EnvironmentService.checkEnvironment();
-      tempBuildDir = TemplateService.prepareBuildDirectory(
-        project,
-        buildId,
-        this.getTempDir(),
-        this.getTemplateDir(),
-        env.androidSdk.sdkPath!,
-        env.java.javaHome
-      );
-      appendLog(`Build directory prepared at: ${tempBuildDir}`);
+      const baseTemplateApk = FastPackagerService.getBaseTemplateApkPath();
+      let finalApkPath: string | undefined;
+      let finalAabPath: string | undefined;
 
-      // Step 3: Copying website assets
-      emitProgress('Copying website assets', 3, totalSteps, 35);
-      appendLog('[STEP 3/8] Assets synchronized into Android assets/www.');
+      if (baseTemplateApk && !generateAab) {
+        emitProgress('Preparing APK package', 2, totalSteps, 25);
+        appendLog(`[STEP 2/8] Base template APK found at: ${baseTemplateApk}`);
+        appendLog('[STEP 3/8] Using fast zero-memory packaging pipeline (0% Gradle daemon memory overhead)...');
 
-      // Step 4: Configuring Android manifest
-      emitProgress('Configuring Android manifest & permissions', 4, totalSteps, 45);
-      appendLog(`[STEP 4/8] Applied package "${project.packageName}", orientation "${project.orientation}".`);
-
-      // Step 5: Applying application configuration
-      emitProgress('Applying WebView settings and app configuration', 5, totalSteps, 55);
-      appendLog(`[STEP 5/8] Configured WebView: JS=${project.webviewConfig.enableJavaScript}, DOMStorage=${project.webviewConfig.enableDomStorage}, FileUpload=${project.webviewConfig.enableFileUpload}.`);
-
-      // Step 6: Running Gradle
-      emitProgress('Running Gradle build', 6, totalSteps, 70);
-      appendLog(`[STEP 6/8] Executing Gradle build (${build.buildType === 'release' ? 'assembleRelease' : 'assembleDebug'})...`);
-
-      const gradleTask = build.buildType === 'release'
-        ? (generateAab ? 'bundleRelease' : 'assembleRelease')
-        : 'assembleDebug';
-
-      const gradleResult = await GradleService.runGradleBuild(
-        tempBuildDir,
-        gradleTask,
-        {
+        const packResult = await FastPackagerService.packageApk({
+          project,
+          build,
           androidSdkPath: env.androidSdk.sdkPath,
-          javaHome: env.java.javaHome,
+          signingConfig,
           onLog: (line) => appendLog(line),
-          onProgress: (taskText, percent) => {
-            emitProgress(`Running Gradle: ${taskText}`, 6, totalSteps, Math.min(88, Math.max(60, percent)));
+          onProgress: (stage, percent) => {
+            emitProgress(stage, 6, totalSteps, percent);
           }
+        });
+
+        if (!packResult.success || !packResult.apkPath) {
+          throw new Error(packResult.error || 'Fast packaging pipeline failed.');
         }
-      );
 
-      if (!gradleResult.success || (!gradleResult.apkPath && !gradleResult.aabPath)) {
-        throw new Error(gradleResult.error || 'Gradle build failed without producing an output package.');
-      }
+        finalApkPath = packResult.apkPath;
+        appendLog('[STEP 6/8] Fast packaging completed successfully in seconds.');
+        appendLog('[STEP 7/8] Package signed and verified.');
+      } else {
+        // Fallback to full Gradle build (when base template is not pre-built or when generating AAB)
+        emitProgress('Preparing Android project', 2, totalSteps, 25);
+        appendLog('[STEP 2/8] Creating temporary isolated build workspace...');
+        tempBuildDir = TemplateService.prepareBuildDirectory(
+          project,
+          buildId,
+          this.getTempDir(),
+          this.getTemplateDir(),
+          env.androidSdk.sdkPath!,
+          env.java.javaHome
+        );
+        appendLog(`Build directory prepared at: ${tempBuildDir}`);
 
-      appendLog(`[STEP 6/8] Gradle build completed successfully.`);
+        // Step 3: Copying website assets
+        emitProgress('Copying website assets', 3, totalSteps, 35);
+        appendLog('[STEP 3/8] Assets synchronized into Android assets/www.');
 
-      // Step 7: Signing APK (if release)
-      emitProgress('Finalizing and signing package', 7, totalSteps, 90);
-      appendLog('[STEP 7/8] Packaging output artifact...');
+        // Step 4: Configuring Android manifest
+        emitProgress('Configuring Android manifest & permissions', 4, totalSteps, 45);
+        appendLog(`[STEP 4/8] Applied package "${project.packageName}", orientation "${project.orientation}".`);
 
-      let finalApkPath = gradleResult.apkPath;
-      if (build.buildType === 'release' && signingConfig?.keystorePath && finalApkPath) {
-        appendLog('Signing release APK with custom keystore...');
-        const buildToolsDir = path.join(env.androidSdk.sdkPath!, 'build-tools', env.androidSdk.buildTools[0]);
-        const signResult = await SigningService.signApk(finalApkPath, buildToolsDir, signingConfig);
-        if (!signResult.success) {
-          throw new Error(`Signing failed: ${signResult.error}`);
+        // Step 5: Applying application configuration
+        emitProgress('Applying WebView settings and app configuration', 5, totalSteps, 55);
+        appendLog(`[STEP 5/8] Configured WebView: JS=${project.webviewConfig.enableJavaScript}, DOMStorage=${project.webviewConfig.enableDomStorage}, FileUpload=${project.webviewConfig.enableFileUpload}.`);
+
+        // Step 6: Running Gradle
+        emitProgress('Running Gradle build', 6, totalSteps, 70);
+        appendLog(`[STEP 6/8] Executing Gradle build (${build.buildType === 'release' ? 'assembleRelease' : 'assembleDebug'})...`);
+
+        const gradleTask = build.buildType === 'release'
+          ? (generateAab ? 'bundleRelease' : 'assembleRelease')
+          : 'assembleDebug';
+
+        const gradleResult = await GradleService.runGradleBuild(
+          tempBuildDir,
+          gradleTask,
+          {
+            androidSdkPath: env.androidSdk.sdkPath,
+            javaHome: env.java.javaHome,
+            onLog: (line) => appendLog(line),
+            onProgress: (taskText, percent) => {
+              emitProgress(`Running Gradle: ${taskText}`, 6, totalSteps, Math.min(88, Math.max(60, percent)));
+            }
+          }
+        );
+
+        if (!gradleResult.success || (!gradleResult.apkPath && !gradleResult.aabPath)) {
+          throw new Error(gradleResult.error || 'Gradle build failed without producing an output package.');
         }
-        appendLog('Release APK signed successfully.');
+
+        appendLog('[STEP 6/8] Gradle build completed successfully.');
+
+        // Step 7: Signing APK (if release)
+        emitProgress('Finalizing and signing package', 7, totalSteps, 90);
+        appendLog('[STEP 7/8] Packaging output artifact...');
+
+        finalApkPath = gradleResult.apkPath;
+        finalAabPath = gradleResult.aabPath;
+        if (build.buildType === 'release' && signingConfig?.keystorePath && finalApkPath) {
+          appendLog('Signing release APK with custom keystore...');
+          const buildToolsDir = path.join(env.androidSdk.sdkPath!, 'build-tools', env.androidSdk.buildTools[0]);
+          const signResult = await SigningService.signApk(finalApkPath, buildToolsDir, signingConfig);
+          if (!signResult.success) {
+            throw new Error(`Signing failed: ${signResult.error}`);
+          }
+          appendLog('Release APK signed successfully.');
+        }
       }
 
       // Step 8: Finalizing build & moving artifact to storage/builds/:id/output/
@@ -334,10 +366,10 @@ export class BuildEngine extends EventEmitter {
       }
 
       let savedAabPath = '';
-      if (gradleResult.aabPath && fs.existsSync(gradleResult.aabPath)) {
+      if (finalAabPath && fs.existsSync(finalAabPath)) {
         const safeBaseName = `${project.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-release.aab`;
         savedAabPath = path.join(outputDir, safeBaseName);
-        fs.copyFileSync(gradleResult.aabPath, savedAabPath);
+        fs.copyFileSync(finalAabPath, savedAabPath);
       }
 
       // Clean temporary build directory immediately
@@ -345,6 +377,10 @@ export class BuildEngine extends EventEmitter {
         if (tempBuildDir && fs.existsSync(tempBuildDir)) {
           fs.rmSync(tempBuildDir, { recursive: true, force: true });
           appendLog('Temporary build directory cleaned.');
+        }
+        const fastpackDir = path.join(this.getTempDir(), `fastpack-${buildId}`);
+        if (fs.existsSync(fastpackDir)) {
+          fs.rmSync(fastpackDir, { recursive: true, force: true });
         }
       } catch (cleanErr: any) {
         Logger.warn(`Failed to clean temp build dir: ${cleanErr.message}`);
