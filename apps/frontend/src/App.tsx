@@ -16,7 +16,7 @@ export const App: React.FC = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
   const [activeBuildModalId, setActiveBuildModalId] = useState<string | null>(null);
   const [envStatus, setEnvStatus] = useState<EnvironmentStatus | null>(null);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
   useEffect(() => {
     // Initial environment check
@@ -32,7 +32,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} flex flex-col font-sans transition-colors duration-200`}>
+    <div className={`min-h-screen ${darkMode ? 'dark bg-stone-950 text-stone-100' : 'bg-[#FAF9F5] text-stone-800'} flex flex-col font-sans transition-colors duration-200`}>
       {/* Top Navbar */}
       <Navbar
         envStatus={envStatus}

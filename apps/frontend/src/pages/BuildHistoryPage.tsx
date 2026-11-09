@@ -3,7 +3,7 @@ import { BuildRecord } from '../types';
 import { api } from '../services/api';
 import {
   History,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   RotateCw,
   Download,
@@ -38,37 +38,37 @@ export const BuildHistoryPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100">Build History</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Audit generated APK artifacts, duration metrics, and compiler logs.
+          <h2 className="text-xl font-semibold text-stone-900 tracking-tight">Build History</h2>
+          <p className="text-xs text-stone-500 mt-1">
+            Review compiled APK packages, build durations, and packaging logs.
           </p>
         </div>
 
         {/* Filter buttons */}
-        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl text-xs">
+        <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl text-xs border border-stone-200/60 self-start sm:self-auto">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
-              statusFilter === 'all' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+              statusFilter === 'all' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
             }`}
           >
             All Builds
           </button>
           <button
             onClick={() => setStatusFilter('success')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
-              statusFilter === 'success' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+              statusFilter === 'success' ? 'bg-white text-emerald-800 shadow-sm' : 'text-stone-500 hover:text-stone-800'
             }`}
           >
             Successful
           </button>
           <button
             onClick={() => setStatusFilter('failed')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
-              statusFilter === 'failed' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+              statusFilter === 'failed' ? 'bg-white text-rose-800 shadow-sm' : 'text-stone-500 hover:text-stone-800'
             }`}
           >
             Failed
@@ -77,81 +77,81 @@ export const BuildHistoryPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-slate-400 gap-2">
-          <RotateCw className="w-5 h-5 animate-spin text-blue-500" />
+        <div className="flex items-center justify-center py-20 text-stone-400 gap-2">
+          <RotateCw className="w-5 h-5 animate-spin text-stone-600" />
           <span className="text-xs">Loading build history...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 bg-slate-900/60 border border-slate-800 rounded-2xl p-8 space-y-3">
-          <History className="w-10 h-10 text-slate-600 mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">No build records found</p>
-          <p className="text-xs text-slate-400">Launch a build from any project to see history here.</p>
+        <div className="text-center py-16 bg-white border border-stone-200/70 rounded-3xl p-8 space-y-3 shadow-sm">
+          <History className="w-10 h-10 text-stone-300 mx-auto" />
+          <p className="text-sm font-medium text-stone-800">No build records found</p>
+          <p className="text-xs text-stone-500">Launch a build from any application to see history here.</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-stone-200/70 rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-800/60 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px] tracking-wider">
+            <table className="w-full text-left text-xs text-stone-700">
+              <thead className="bg-stone-50 text-stone-500 border-b border-stone-200/70 font-medium uppercase text-[10px] tracking-wider">
                 <tr>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Build Details</th>
-                  <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Duration</th>
-                  <th className="py-3 px-4">Artifact Size</th>
-                  <th className="py-3 px-4">Date / Time</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-4">Application Details</th>
+                  <th className="py-3.5 px-4">Type</th>
+                  <th className="py-3.5 px-4">Duration</th>
+                  <th className="py-3.5 px-4">Size</th>
+                  <th className="py-3.5 px-4">Date & Time</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-stone-100">
                 {filtered.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                  <tr key={b.id} className="hover:bg-stone-50/60 transition-colors">
+                    <td className="py-3.5 px-5 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
                           b.status === 'success'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60'
                             : b.status === 'failed'
-                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                            ? 'bg-rose-50 text-rose-800 border border-rose-200/60'
+                            : 'bg-amber-50 text-amber-800 border border-amber-200/60'
                         }`}
                       >
-                        {b.status === 'success' && <CheckCircle className="w-3.5 h-3.5" />}
-                        {b.status === 'failed' && <XCircle className="w-3.5 h-3.5" />}
-                        {b.status === 'running' && <RotateCw className="w-3.5 h-3.5 animate-spin" />}
+                        {b.status === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                        {b.status === 'failed' && <XCircle className="w-3.5 h-3.5 text-rose-600" />}
+                        {b.status === 'running' && <RotateCw className="w-3.5 h-3.5 text-amber-600 animate-spin" />}
                         <span className="capitalize">{b.status}</span>
                       </span>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-100">{b.projectName || 'Web Application'}</div>
-                      <div className="font-mono text-[10px] text-slate-400 truncate max-w-xs">{b.id}</div>
+                      <div className="font-medium text-stone-900">{b.projectName || 'Web Application'}</div>
+                      <div className="font-mono text-[10px] text-stone-400 truncate max-w-xs">{b.id}</div>
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="uppercase font-mono font-bold text-slate-300 px-2 py-0.5 rounded bg-slate-800 text-[10px]">
+                      <span className="uppercase font-mono font-medium text-stone-600 px-2 py-0.5 rounded-full bg-stone-100 text-[10px]">
                         {b.buildType}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-slate-400">
+                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-stone-500">
                       {b.durationMs ? `${(b.durationMs / 1000).toFixed(1)}s` : '—'}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-slate-300">
+                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-stone-700">
                       {b.apkSize ? `${(b.apkSize / (1024 * 1024)).toFixed(2)} MB` : '—'}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-400">
-                      {new Date(b.startTime).toLocaleString()}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-stone-500">
+                      {new Date(b.startTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                    <td className="py-3.5 px-5 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setSelectedBuildId(b.id)}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/70 text-stone-700 text-xs font-medium transition-colors"
                         >
-                          <Terminal className="w-3.5 h-3.5" />
+                          <Terminal className="w-3.5 h-3.5 text-stone-500" />
                           <span>Logs</span>
                         </button>
 
@@ -159,10 +159,10 @@ export const BuildHistoryPage: React.FC = () => {
                           <a
                             href={api.getDownloadUrl(b.id)}
                             download
-                            className="flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02]"
+                            className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-medium shadow-sm transition-all"
                           >
                             <Download className="w-3.5 h-3.5" />
-                            <span>Download APK</span>
+                            <span>Download</span>
                           </a>
                         )}
                       </div>

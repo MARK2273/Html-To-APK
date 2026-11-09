@@ -7,7 +7,7 @@ import { Step4WebView } from '../components/wizard/Step4WebView';
 import { Step5Preview } from '../components/wizard/Step5Preview';
 import { BuildProgressModal } from '../components/build/BuildProgressModal';
 import { api } from '../services/api';
-import { ArrowLeft, ArrowRight, CheckCircle2, RotateCw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, RotateCw } from 'lucide-react';
 
 interface CreateAppPageProps {
   initialProjectId?: string;
@@ -15,10 +15,10 @@ interface CreateAppPageProps {
 }
 
 const STEPS = [
-  { id: 1, label: 'Upload Website' },
-  { id: 2, label: 'Configuration' },
+  { id: 1, label: 'Upload Files' },
+  { id: 2, label: 'App Details' },
   { id: 3, label: 'Permissions' },
-  { id: 4, label: 'WebView Settings' },
+  { id: 4, label: 'WebView' },
   { id: 5, label: 'Preview & Build' }
 ];
 
@@ -90,18 +90,18 @@ export const CreateAppPage: React.FC<CreateAppPageProps> = ({
 
   if (isLoading || !project) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3">
-        <RotateCw className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-sm font-medium">Initializing Application Workspace...</p>
+      <div className="flex flex-col items-center justify-center py-28 text-stone-400 space-y-3">
+        <RotateCw className="w-7 h-7 animate-spin text-stone-600" />
+        <p className="text-sm font-medium text-stone-600">Preparing Studio Workspace...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Stepper */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-        <div className="grid grid-cols-5 gap-2">
+      <div className="bg-white border border-stone-200/70 rounded-2xl p-2.5 shadow-sm">
+        <div className="grid grid-cols-5 gap-1.5">
           {STEPS.map((step) => {
             const isActive = currentStep === step.id;
             const isCompleted = currentStep > step.id;
@@ -110,24 +110,24 @@ export const CreateAppPage: React.FC<CreateAppPageProps> = ({
               <button
                 key={step.id}
                 onClick={() => setCurrentStep(step.id)}
-                className={`flex flex-col sm:flex-row items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 py-2 px-3 rounded-xl text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-blue-600/15 border border-blue-500/40 text-blue-400'
+                    ? 'bg-stone-900 text-stone-50 shadow-sm'
                     : isCompleted
-                    ? 'text-emerald-400 hover:bg-slate-800/40'
-                    : 'text-slate-500 hover:text-slate-300'
+                    ? 'text-stone-700 bg-stone-100/70 hover:bg-stone-200/60'
+                    : 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md'
+                      ? 'bg-white/20 text-white'
                       : isCompleted
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-slate-800 text-slate-400'
+                      ? 'bg-stone-200 text-stone-800'
+                      : 'bg-stone-100 text-stone-400'
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : step.id}
+                  {isCompleted ? <Check className="w-3 h-3" /> : step.id}
                 </div>
                 <span className="truncate hidden sm:inline">{step.label}</span>
               </button>
@@ -136,8 +136,8 @@ export const CreateAppPage: React.FC<CreateAppPageProps> = ({
         </div>
       </div>
 
-      {/* Step Content */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+      {/* Step Content Container */}
+      <div className="bg-white border border-stone-200/70 rounded-3xl p-6 sm:p-8 shadow-sm transition-all">
         {currentStep === 1 && (
           <Step1Upload
             projectId={project.id}
@@ -180,26 +180,26 @@ export const CreateAppPage: React.FC<CreateAppPageProps> = ({
       </div>
 
       {/* Navigation Footer Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <button
           onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
           disabled={currentStep === 1}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none text-slate-300 text-xs font-semibold transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-200/80 bg-white hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none text-stone-700 text-xs font-medium transition-all shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
         </button>
 
-        <div className="text-xs text-slate-400 font-medium">
+        <div className="text-xs text-stone-400 font-medium">
           Step {currentStep} of {STEPS.length}
         </div>
 
         {currentStep < 5 ? (
           <button
             onClick={() => setCurrentStep((prev) => Math.min(5, prev + 1))}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02]"
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-medium shadow-sm transition-all hover:shadow active:scale-[0.98]"
           >
-            <span>Next Step</span>
+            <span>Continue</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         ) : (

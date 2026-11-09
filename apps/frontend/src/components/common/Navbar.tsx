@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, CheckCircle, AlertTriangle, Moon, Sun, PlusCircle } from 'lucide-react';
+import { Smartphone, CheckCircle2, AlertCircle, Moon, Sun, Plus } from 'lucide-react';
 import { EnvironmentStatus } from '../../types';
 
 interface NavbarProps {
@@ -16,58 +16,67 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate
 }) => {
   return (
-    <header className="h-16 border-b border-slate-700/60 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-6 flex items-center justify-between">
-      <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('dashboard')}>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <Smartphone className="w-6 h-6 text-white" />
+    <header className="h-16 border-b border-stone-200/80 bg-[#FAF9F5]/90 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between transition-colors">
+      {/* Brand logo & title */}
+      <div 
+        className="flex items-center gap-3 cursor-pointer group" 
+        onClick={() => onNavigate('dashboard')}
+      >
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-stone-800 to-stone-700 flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
+          <Smartphone className="w-5 h-5 text-stone-100" />
         </div>
         <div>
-          <span className="font-bold text-lg text-slate-100 tracking-tight flex items-center gap-2">
-            HTML <span className="text-blue-400 font-extrabold">➔</span> APK
-            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-medium">v1.0</span>
-          </span>
-          <p className="text-[11px] text-slate-400">Android Build Engine</p>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-base text-stone-900 tracking-tight flex items-center gap-1.5">
+              HTML <span className="text-stone-400 font-normal">→</span> APK
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-200/70 text-stone-600 font-medium">
+              v1.0
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-500 tracking-normal">Android Package Studio</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* Right actions */}
+      <div className="flex items-center gap-3">
         {/* Environment Readiness Pill */}
-        <div
+        <button
           onClick={() => onNavigate('environment')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium cursor-pointer transition-colors ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
             envStatus?.isReady
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-              : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+              ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800 hover:bg-emerald-100/70'
+              : 'bg-amber-50/80 border-amber-200 text-amber-800 hover:bg-amber-100/70'
           }`}
-          title={envStatus?.isReady ? 'Android SDK & Java Ready' : 'Environment configuration required'}
+          title={envStatus?.isReady ? 'Build Engine & SDK ready' : 'Environment setup required'}
         >
           {envStatus?.isReady ? (
             <>
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Android SDK Ready</span>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>SDK Ready</span>
             </>
           ) : (
             <>
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
               <span>Setup Required</span>
             </>
           )}
-        </div>
+        </button>
 
         {/* Quick Create App Button */}
         <button
           onClick={() => onNavigate('create')}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-medium shadow-sm transition-all hover:shadow active:scale-[0.98]"
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>New Application</span>
+          <Plus className="w-3.5 h-3.5" />
+          <span>New App</span>
         </button>
 
-        {/* Dark/Light mode toggle */}
+        {/* Subtle Theme Toggle */}
         <button
           onClick={onToggleDarkMode}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
-          title={darkMode ? 'Light Theme' : 'Dark Theme'}
+          className="p-2 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-200/60 transition-colors"
+          title={darkMode ? 'Switch to Light' : 'Switch to Dark'}
         >
           {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
@@ -75,4 +84,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-

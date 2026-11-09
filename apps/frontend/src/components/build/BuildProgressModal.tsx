@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   Clock,
   Terminal,
@@ -20,14 +20,14 @@ interface BuildProgressModalProps {
 }
 
 const BUILD_STEPS = [
-  'Validating website files',
-  'Preparing Android project',
-  'Copying website assets',
-  'Configuring Android manifest',
-  'Applying application configuration',
-  'Running Gradle',
+  'Validating web files',
+  'Preparing base template',
+  'Injecting assets',
+  'Writing configurations',
+  'Aligning package',
   'Signing APK',
-  'Finalizing build'
+  'Verifying binary',
+  'Ready to install'
 ];
 
 export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
@@ -59,36 +59,38 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white border border-stone-200/80 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-6 border-b border-stone-100 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold text-slate-100">Android APK Build Engine</h2>
+              <h2 className="text-lg font-semibold text-stone-900">Android Build Engine</h2>
               {status === 'running' && (
-                <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
-                  Building
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                  Packaging
                 </span>
               )}
               {status === 'success' && (
-                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle className="w-3.5 h-3.5" /> Success
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  Ready
                 </span>
               )}
               {status === 'failed' && (
-                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                  <XCircle className="w-3.5 h-3.5" /> Failed
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200/60">
+                  <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                  Failed
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-1 font-mono">Build ID: {buildId}</p>
+            <p className="text-xs text-stone-400 mt-1 font-mono">Build ID: {buildId}</p>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -98,24 +100,24 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Progress Bar & Current Stage */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold text-slate-200 flex items-center gap-2">
-                {status === 'running' && <RotateCw className="w-4 h-4 text-blue-400 animate-spin" />}
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium text-stone-800 flex items-center gap-2">
+                {status === 'running' && <RotateCw className="w-3.5 h-3.5 text-stone-600 animate-spin" />}
                 {stage}
               </span>
-              <span className="font-mono text-xs font-bold text-blue-400">
+              <span className="font-mono text-xs font-semibold text-stone-600">
                 {progressPercent}%
               </span>
             </div>
 
-            <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/60">
+            <div className="w-full h-2 bg-stone-100 rounded-full overflow-hidden p-0.5 border border-stone-200/60">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   status === 'failed'
                     ? 'bg-rose-500'
                     : status === 'success'
-                    ? 'bg-emerald-500'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-500'
+                    ? 'bg-emerald-600'
+                    : 'bg-stone-900'
                 }`}
                 style={{ width: `${progressPercent}%` }}
               ></div>
@@ -132,21 +134,21 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
               return (
                 <div
                   key={step}
-                  className={`p-2.5 rounded-xl border text-xs transition-all ${
+                  className={`p-3 rounded-2xl border text-xs transition-all ${
                     isPast
-                      ? 'bg-emerald-500/5 border-emerald-500/30 text-emerald-300'
+                      ? 'bg-emerald-50/70 border-emerald-200/60 text-emerald-900'
                       : isCurrent
-                      ? 'bg-blue-600/10 border-blue-500/50 text-blue-300 ring-1 ring-blue-500/30'
-                      : 'bg-slate-800/30 border-slate-700/40 text-slate-400'
+                      ? 'bg-stone-900 border-stone-900 text-stone-50 shadow-sm'
+                      : 'bg-stone-50/60 border-stone-200/60 text-stone-400'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 mb-1 font-semibold">
+                  <div className="flex items-center gap-1.5 mb-1 font-medium">
                     {isPast ? (
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     ) : isCurrent ? (
-                      <RotateCw className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+                      <RotateCw className="w-3.5 h-3.5 text-stone-300 animate-spin" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <Clock className="w-3.5 h-3.5 text-stone-400" />
                     )}
                     <span>Step {idx + 1}</span>
                   </div>
@@ -158,10 +160,10 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
 
           {/* Error Banner */}
           {error && (
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs space-y-1">
-              <div className="font-bold flex items-center gap-2 text-rose-400">
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1">
+              <div className="font-semibold flex items-center gap-2 text-rose-700">
                 <XCircle className="w-4 h-4" />
-                <span>Build Operation Encountered An Error</span>
+                <span>Build Error</span>
               </div>
               <p className="font-mono whitespace-pre-wrap">{error}</p>
             </div>
@@ -169,10 +171,10 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
 
           {/* Real-Time Build Logs Terminal */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold flex items-center gap-1.5 text-slate-300">
-                <Terminal className="w-4 h-4 text-slate-400" />
-                Live Build Logs ({logs.length} lines)
+            <div className="flex items-center justify-between text-xs text-stone-500">
+              <span className="font-medium flex items-center gap-1.5 text-stone-700">
+                <Terminal className="w-4 h-4 text-stone-500" />
+                Build Logs ({logs.length} lines)
               </span>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -180,15 +182,15 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
                     type="checkbox"
                     checked={autoScroll}
                     onChange={(e) => setAutoScroll(e.target.checked)}
-                    className="rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-0"
+                    className="rounded border-stone-300 text-stone-900 focus:ring-0"
                   />
                   <span>Auto-scroll</span>
                 </label>
                 <button
                   onClick={handleCopyLogs}
-                  className="flex items-center gap-1 hover:text-slate-200 transition-colors"
+                  className="flex items-center gap-1 hover:text-stone-800 transition-colors"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
@@ -196,25 +198,23 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
 
             <div
               ref={logContainerRef}
-              className="bg-slate-950 border border-slate-800 rounded-xl p-4 h-64 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300 space-y-1 select-text"
+              className="bg-stone-900 border border-stone-800 rounded-2xl p-4 h-64 overflow-y-auto font-mono text-[11px] leading-relaxed text-stone-300 space-y-1 select-text shadow-inner"
             >
               {logs.length === 0 ? (
-                <div className="text-slate-400 italic">Connecting to build logs stream...</div>
+                <div className="text-stone-500 italic">Connecting to build logs stream...</div>
               ) : (
                 logs.map((log, index) => (
                   <div key={index} className="flex gap-3">
-                    <span className="text-slate-400 select-none w-8 text-right shrink-0">
+                    <span className="text-stone-600 select-none w-8 text-right shrink-0">
                       {index + 1}
                     </span>
                     <span
                       className={`break-all ${
                         log.includes('[ERROR]') || log.includes('FAILED')
-                          ? 'text-rose-400 font-semibold'
-                          : log.includes('[STEP') || log.includes('SUCCESSFUL')
-                          ? 'text-emerald-400 font-semibold'
-                          : log.includes('> Task :')
-                          ? 'text-blue-300'
-                          : 'text-slate-300'
+                          ? 'text-rose-400 font-medium'
+                          : log.includes('[STEP') || log.includes('SUCCESSFUL') || log.includes('[FAST PACK]')
+                          ? 'text-emerald-400 font-medium'
+                          : 'text-stone-300'
                       }`}
                     >
                       {log}
@@ -227,17 +227,17 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
-          <div className="text-xs text-slate-400">
-            {status === 'running' && 'Build is actively executing via Gradle compiler.'}
-            {status === 'success' && 'Your installable Android APK is ready!'}
-            {status === 'failed' && 'Build failed. Check the error and terminal output above.'}
+        <div className="p-5 border-t border-stone-100 bg-stone-50/60 flex items-center justify-between">
+          <div className="text-xs text-stone-500">
+            {status === 'running' && 'Fast packaging pipeline in progress...'}
+            {status === 'success' && 'Your installable APK has been assembled and signed!'}
+            {status === 'failed' && 'Packaging failed. Inspect details above.'}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-100 text-xs font-medium transition-colors bg-white shadow-sm"
             >
               Close
             </button>
@@ -246,9 +246,9 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
               <a
                 href={api.getDownloadUrl(buildId)}
                 download
-                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02]"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-medium shadow-sm transition-all"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
                 <span>Download APK</span>
               </a>
             )}
@@ -258,4 +258,3 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
     </div>
   );
 };
-

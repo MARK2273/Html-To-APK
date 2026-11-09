@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Project, ExtractedWebsiteInfo, BuildType } from '../../types';
 import { DeviceFrame } from '../preview/DeviceFrame';
 import { api } from '../../services/api';
-import { Hammer, Sparkles, PackageCheck, AlertCircle } from 'lucide-react';
+import { PackageCheck, AlertCircle, Smartphone } from 'lucide-react';
 
 interface Step5PreviewProps {
   project: Project;
@@ -24,11 +24,11 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
   const activePermissions = Object.entries(project.permissions).filter(([, v]) => v).map(([k]) => k);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-bold text-slate-100">Live Preview & Build Configuration</h3>
-        <p className="text-xs text-slate-400 mt-1">
-          Interact with your uploaded website in the simulated Android WebView before compiling the APK.
+        <h3 className="text-lg font-semibold text-stone-900 tracking-tight">Preview & Build</h3>
+        <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+          Test your application in the simulated Android WebView, review package settings, and compile the final APK.
         </p>
       </div>
 
@@ -39,48 +39,48 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
         </div>
 
         {/* Build Options & Action (Right 5 cols) */}
-        <div className="lg:col-span-5 space-y-6 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <PackageCheck className="w-5 h-5 text-blue-400" />
-            <h4 className="font-bold text-sm text-slate-100">Package Summary</h4>
+        <div className="lg:col-span-5 space-y-5 bg-stone-50/70 border border-stone-200/80 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-stone-200/70 pb-3">
+            <PackageCheck className="w-4 h-4 text-stone-700" />
+            <h4 className="font-semibold text-sm text-stone-900">Package Summary</h4>
           </div>
 
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Application Name:</span>
-              <span className="font-semibold text-slate-200">{project.name}</span>
+          <div className="space-y-2.5 text-xs">
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">App Name:</span>
+              <span className="font-medium text-stone-900">{project.name}</span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Package Identifier:</span>
-              <span className="font-mono text-blue-400">{project.packageName}</span>
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">Package ID:</span>
+              <span className="font-mono text-stone-700">{project.packageName}</span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Version:</span>
-              <span className="text-slate-200 font-mono">v{project.versionName} ({project.versionCode})</span>
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">Version:</span>
+              <span className="text-stone-800 font-mono">v{project.versionName} ({project.versionCode})</span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Entry HTML:</span>
-              <span className="font-mono text-slate-300">{project.entryPoint}</span>
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">Entry HTML:</span>
+              <span className="font-mono text-stone-800">{project.entryPoint}</span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Orientation:</span>
-              <span className="capitalize text-slate-300">{project.orientation}</span>
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">Orientation:</span>
+              <span className="capitalize text-stone-800">{project.orientation}</span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">Total Web Files:</span>
-              <span className="text-slate-200">{filesInfo?.totalFiles || 0} files</span>
+            <div className="flex justify-between py-1 border-b border-stone-200/50">
+              <span className="text-stone-500">Total Files:</span>
+              <span className="text-stone-900 font-medium">{filesInfo?.totalFiles || 0} files</span>
             </div>
 
             <div className="py-1">
-              <span className="text-slate-400 block mb-1">Declared Permissions ({activePermissions.length}):</span>
-              <div className="flex flex-wrap gap-1.5">
+              <span className="text-stone-500 block mb-1">Declared Permissions ({activePermissions.length}):</span>
+              <div className="flex flex-wrap gap-1">
                 {activePermissions.map(p => (
-                  <span key={p} className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300 font-mono">
+                  <span key={p} className="px-2 py-0.5 rounded-full bg-stone-200/70 text-[10px] text-stone-700 font-mono">
                     {p}
                   </span>
                 ))}
@@ -89,27 +89,27 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
           </div>
 
           {/* Build Type Selector */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
-            <label className="text-xs font-semibold text-slate-300 block">Output Format</label>
+          <div className="space-y-2 pt-2 border-t border-stone-200/70">
+            <label className="text-xs font-medium text-stone-700 block">Package Type</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setBuildType('debug')}
-                className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all ${
                   buildType === 'debug'
-                    ? 'bg-blue-600/15 border-blue-500 text-blue-300 ring-1 ring-blue-500/30'
-                    : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:bg-slate-800'
+                    ? 'bg-stone-900 border-stone-900 text-stone-50 shadow-sm'
+                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                 }`}
               >
-                Debug APK (Testing)
+                Debug APK
               </button>
               <button
                 type="button"
                 onClick={() => setBuildType('release')}
-                className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all ${
                   buildType === 'release'
-                    ? 'bg-blue-600/15 border-blue-500 text-blue-300 ring-1 ring-blue-500/30'
-                    : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:bg-slate-800'
+                    ? 'bg-stone-900 border-stone-900 text-stone-50 shadow-sm'
+                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                 }`}
               >
                 Release APK
@@ -118,21 +118,21 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
           </div>
 
           {buildType === 'release' && (
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={generateAab}
                 onChange={(e) => setGenerateAab(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-0"
+                className="rounded border-stone-300 text-stone-900 focus:ring-0"
               />
-              <span>Generate Android App Bundle (.aab) for Google Play</span>
+              <span>Generate Android App Bundle (.aab)</span>
             </label>
           )}
 
           {(!filesInfo || filesInfo.totalFiles === 0) && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
-              <span>Please upload your website files before initiating build.</span>
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+              <span>Please upload your website files before building.</span>
             </div>
           )}
 
@@ -141,11 +141,10 @@ export const Step5Preview: React.FC<Step5PreviewProps> = ({
             type="button"
             disabled={isBuilding || !filesInfo || filesInfo.totalFiles === 0}
             onClick={() => onStartBuild(buildType, generateAab)}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:pointer-events-none text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-2xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:pointer-events-none text-stone-50 text-sm font-medium shadow-sm transition-all hover:shadow active:scale-[0.99] flex items-center justify-center gap-2"
           >
-            <Hammer className="w-4 h-4" />
-            <span>Build Android APK</span>
-            <Sparkles className="w-4 h-4 text-amber-300" />
+            <Smartphone className="w-4 h-4 text-stone-300" />
+            <span>{isBuilding ? 'Building Package...' : 'Build Android APK'}</span>
           </button>
         </div>
       </div>

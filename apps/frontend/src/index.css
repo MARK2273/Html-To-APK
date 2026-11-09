@@ -2,8 +2,23 @@
 
 @layer base {
   body {
-    @apply antialiased selection:bg-blue-600 selection:text-white;
+    @apply antialiased bg-[#FAF9F5] text-stone-800 selection:bg-stone-200 selection:text-stone-900;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-}
 
+  /* Smooth aesthetic scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #E7E5E0;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D8D4CC;
+  }
+}
