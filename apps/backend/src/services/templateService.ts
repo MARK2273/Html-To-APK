@@ -37,10 +37,10 @@ export class TemplateService {
     const isRender = !!process.env.RENDER || fs.existsSync('/opt/android-sdk');
 
     // On local Windows: generous memory so builds never fail with Metaspace OOM
-    // On Render container: calibrated memory allowing 220MB Metaspace and 160MB heap within 512MB RAM
+    // On Render container: strictly calibrated memory keeping total footprint within 512MB RAM
     const jvmArgs = (!isRender && isWindows)
       ? 'org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8'
-      : 'org.gradle.jvmargs=-Xms32m -Xmx160m -XX:MaxMetaspaceSize=220m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+      : 'org.gradle.jvmargs=-Xms32m -Xmx120m -XX:MaxMetaspaceSize=175m -XX:ReservedCodeCacheSize=24m -XX:CICompilerCount=2 -Xss384k -XX:+UseSerialGC -Dfile.encoding=UTF-8';
 
     let gradleProps = [
       jvmArgs,
@@ -48,7 +48,8 @@ export class TemplateService {
       'org.gradle.parallel=false',
       'org.gradle.workers.max=1',
       'org.gradle.vfs.watch=false',
-      'android.builder.sdkDownload=false'
+      'android.builder.sdkDownload=false',
+      'android.enableAapt2Daemon=false'
     ].join('\n') + '\n';
     if (javaHome) {
       const normalizedJava = javaHome.replace(/\\/g, '/');

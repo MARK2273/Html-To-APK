@@ -87,7 +87,7 @@ export class GradleService {
 
       // Cap launcher JVM memory via GRADLE_OPTS only on Linux containers, not on local Windows
       if (!isWindows) {
-        env.GRADLE_OPTS = '-Xms16m -Xmx48m -XX:MaxMetaspaceSize=48m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
+        env.GRADLE_OPTS = '-Xms16m -Xmx32m -XX:MaxMetaspaceSize=32m -XX:ReservedCodeCacheSize=16m -XX:CICompilerCount=2 -Xss256k -XX:+UseSerialGC -Dfile.encoding=UTF-8';
       } else {
         delete env.GRADLE_OPTS;
       }

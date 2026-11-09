@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "https://html-to-apk-backend.onrender.com/api/$1"
     },
     {
       "source": "/((?!api).*)",
