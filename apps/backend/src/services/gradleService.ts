@@ -89,8 +89,8 @@ export class GradleService {
       env.GRADLE_OPTS = '-Xms16m -Xmx48m -XX:MaxMetaspaceSize=48m -XX:+UseSerialGC -Dfile.encoding=UTF-8';
 
       const args = isWindows
-        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace', '-Dkotlin.compiler.execution.strategy=in-process']
-        : [task, '--no-daemon', '--stacktrace', '-Dkotlin.compiler.execution.strategy=in-process'];
+        ? ['/c', 'gradlew.bat', task, '--no-daemon', '--stacktrace']
+        : [task, '--no-daemon', '--stacktrace'];
 
       const cmd = isWindows ? 'cmd.exe' : execPath;
       Logger.info(`Spawning ${cmd} ${args.join(' ')} in ${projectDir}`);

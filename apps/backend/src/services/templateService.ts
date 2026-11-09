@@ -31,11 +31,10 @@ export class TemplateService {
     const localPropertiesContent = `sdk.dir=${normalizedSdk}\n`;
     fs.writeFileSync(path.join(buildDir, 'local.properties'), localPropertiesContent);
 
-    // 2. Configure gradle.properties with container memory constraints & in-process Kotlin compiler
+    // 2. Configure gradle.properties with container memory constraints
     const gradlePropsPath = path.join(buildDir, 'gradle.properties');
     let gradleProps = [
-      'org.gradle.jvmargs=-Xms64m -Xmx200m -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
-      'kotlin.compiler.execution.strategy=in-process',
+      'org.gradle.jvmargs=-Xms64m -Xmx220m -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -Dfile.encoding=UTF-8',
       'android.useAndroidX=true',
       'org.gradle.parallel=false',
       'org.gradle.workers.max=1',
@@ -98,31 +97,33 @@ export class TemplateService {
     const manifestPath = path.join(buildDir, 'app', 'src', 'main', 'AndroidManifest.xml');
     fs.writeFileSync(manifestPath, manifestXml);
 
-    // 6. Generate dynamic AppConfig.kt
+    // 6. Generate dynamic AppConfig.java
     const entryRelative = project.entryPoint.replace(/\\/g, '/');
-    const appConfigKt = `package com.htmltoapk.template
+    const appConfigJava = `package com.htmltoapk.template;
 
-object AppConfig {
-    const val ENTRY_URL = "https://appassets.androidplatform.net/assets/www/${entryRelative}"
-    const val FALLBACK_ASSET_URL = "file:///android_asset/www/${entryRelative}"
+public final class AppConfig {
+    public static final String ENTRY_URL = "https://appassets.androidplatform.net/assets/www/${entryRelative}";
+    public static final String FALLBACK_ASSET_URL = "file:///android_asset/www/${entryRelative}";
 
-    const val ENABLE_JAVASCRIPT = ${project.webviewConfig.enableJavaScript}
-    const val ENABLE_DOM_STORAGE = ${project.webviewConfig.enableDomStorage}
-    const val ENABLE_DATABASE = ${project.webviewConfig.enableLocalStorage}
-    const val ENABLE_GEOLOCATION = ${project.webviewConfig.enableGeolocation}
-    const val ENABLE_ZOOM = ${project.webviewConfig.enableZoom}
-    const val ENABLE_FILE_UPLOAD = ${project.webviewConfig.enableFileUpload}
-    const val ENABLE_CAMERA = ${project.webviewConfig.enableCameraAccess}
-    const val ENABLE_MICROPHONE = ${project.webviewConfig.enableMicrophoneAccess}
-    const val ENABLE_DOWNLOADS = ${project.webviewConfig.enableDownloadSupport}
-    const val ENABLE_PULL_TO_REFRESH = true
-    const val ALLOW_EXTERNAL_LINKS = ${project.webviewConfig.enableExternalLinks}
-    const val OPEN_EXTERNAL_IN_BROWSER = true
-    const val OFFLINE_CACHE_ENABLED = ${project.webviewConfig.enableOfflineMode}
+    public static final boolean ENABLE_JAVASCRIPT = ${project.webviewConfig.enableJavaScript};
+    public static final boolean ENABLE_DOM_STORAGE = ${project.webviewConfig.enableDomStorage};
+    public static final boolean ENABLE_DATABASE = ${project.webviewConfig.enableLocalStorage};
+    public static final boolean ENABLE_GEOLOCATION = ${project.webviewConfig.enableGeolocation};
+    public static final boolean ENABLE_ZOOM = ${project.webviewConfig.enableZoom};
+    public static final boolean ENABLE_FILE_UPLOAD = ${project.webviewConfig.enableFileUpload};
+    public static final boolean ENABLE_CAMERA = ${project.webviewConfig.enableCameraAccess};
+    public static final boolean ENABLE_MICROPHONE = ${project.webviewConfig.enableMicrophoneAccess};
+    public static final boolean ENABLE_DOWNLOADS = ${project.webviewConfig.enableDownloadSupport};
+    public static final boolean ENABLE_PULL_TO_REFRESH = true;
+    public static final boolean ALLOW_EXTERNAL_LINKS = ${project.webviewConfig.enableExternalLinks};
+    public static final boolean OPEN_EXTERNAL_IN_BROWSER = true;
+    public static final boolean OFFLINE_CACHE_ENABLED = ${project.webviewConfig.enableOfflineMode};
+
+    private AppConfig() {}
 }
 `;
-    const appConfigPath = path.join(buildDir, 'app', 'src', 'main', 'java', 'com', 'htmltoapk', 'template', 'AppConfig.kt');
-    fs.writeFileSync(appConfigPath, appConfigKt);
+    const appConfigPath = path.join(buildDir, 'app', 'src', 'main', 'java', 'com', 'htmltoapk', 'template', 'AppConfig.java');
+    fs.writeFileSync(appConfigPath, appConfigJava);
 
     // 7. Inject website files into assets/www
     const assetsWwwDir = path.join(buildDir, 'app', 'src', 'main', 'assets', 'www');
