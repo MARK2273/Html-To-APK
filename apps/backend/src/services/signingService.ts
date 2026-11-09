@@ -46,7 +46,11 @@ export class SigningService {
 
       Logger.info(`Signing APK at: ${apkPath} (credentials securely masked)`);
 
-      const child = spawn(apksignerPath, args, { shell: process.platform === 'win32' });
+      const safeArgs = args.map(a => (a.includes(' ') && !a.startsWith('"') ? `"${a}"` : a));
+      const child = spawn(apksignerPath, safeArgs, {
+        shell: process.platform === 'win32',
+        windowsVerbatimArguments: process.platform === 'win32'
+      });
       let stderr = '';
 
       child.stderr.on('data', (d) => {

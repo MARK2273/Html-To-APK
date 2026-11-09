@@ -23,6 +23,7 @@ android/webview-template/.gradle/
 android/webview-template/.idea/
 android/webview-template/local.properties
 *.iml
+*.idsig
 .cxx/
 
 # Storage & Temporary Files

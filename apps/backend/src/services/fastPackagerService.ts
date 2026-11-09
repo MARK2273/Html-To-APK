@@ -273,8 +273,12 @@ export class FastPackagerService {
         }
         signArgs.push(alignedApk);
 
+        const safeReleaseArgs = signArgs.map(a => (a.includes(' ') && !a.startsWith('"') ? `"${a}"` : a));
         await new Promise<void>((resolve, reject) => {
-          const child = spawn(apksignerPath, signArgs, { shell: process.platform === 'win32' });
+          const child = spawn(apksignerPath, safeReleaseArgs, {
+            shell: process.platform === 'win32',
+            windowsVerbatimArguments: process.platform === 'win32'
+          });
           let err = '';
           child.stderr?.on('data', (d) => { err += d.toString(); });
           child.on('close', (code) => {
@@ -294,8 +298,12 @@ export class FastPackagerService {
           alignedApk
         ];
 
+        const safeDebugArgs = signArgs.map(a => (a.includes(' ') && !a.startsWith('"') ? `"${a}"` : a));
         await new Promise<void>((resolve, reject) => {
-          const child = spawn(apksignerPath, signArgs, { shell: process.platform === 'win32' });
+          const child = spawn(apksignerPath, safeDebugArgs, {
+            shell: process.platform === 'win32',
+            windowsVerbatimArguments: process.platform === 'win32'
+          });
           let err = '';
           child.stderr?.on('data', (d) => { err += d.toString(); });
           child.on('close', (code) => {

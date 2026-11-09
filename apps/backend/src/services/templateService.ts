@@ -107,33 +107,109 @@ export class TemplateService {
     const manifestPath = path.join(buildDir, 'app', 'src', 'main', 'AndroidManifest.xml');
     fs.writeFileSync(manifestPath, manifestXml);
 
-    // 6. Generate dynamic AppConfig.java
+    // 6. Generate dynamic AppConfig.java and assets/app-config.json
     const entryRelative = project.entryPoint.replace(/\\/g, '/');
+    const safeAppName = project.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     const appConfigJava = `package com.htmltoapk.template;
 
-public final class AppConfig {
-    public static final String ENTRY_URL = "https://appassets.androidplatform.net/assets/www/${entryRelative}";
-    public static final String FALLBACK_ASSET_URL = "file:///android_asset/www/${entryRelative}";
+import android.content.Context;
+import org.json.JSONObject;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-    public static final boolean ENABLE_JAVASCRIPT = ${project.webviewConfig.enableJavaScript};
-    public static final boolean ENABLE_DOM_STORAGE = ${project.webviewConfig.enableDomStorage};
-    public static final boolean ENABLE_DATABASE = ${project.webviewConfig.enableLocalStorage};
-    public static final boolean ENABLE_GEOLOCATION = ${project.webviewConfig.enableGeolocation};
-    public static final boolean ENABLE_ZOOM = ${project.webviewConfig.enableZoom};
-    public static final boolean ENABLE_FILE_UPLOAD = ${project.webviewConfig.enableFileUpload};
-    public static final boolean ENABLE_CAMERA = ${project.webviewConfig.enableCameraAccess};
-    public static final boolean ENABLE_MICROPHONE = ${project.webviewConfig.enableMicrophoneAccess};
-    public static final boolean ENABLE_DOWNLOADS = ${project.webviewConfig.enableDownloadSupport};
-    public static final boolean ENABLE_PULL_TO_REFRESH = true;
-    public static final boolean ALLOW_EXTERNAL_LINKS = ${project.webviewConfig.enableExternalLinks};
-    public static final boolean OPEN_EXTERNAL_IN_BROWSER = true;
-    public static final boolean OFFLINE_CACHE_ENABLED = ${project.webviewConfig.enableOfflineMode};
+public final class AppConfig {
+    public static String APP_NAME = "${safeAppName}";
+    public static String ORIENTATION = "${project.orientation || 'unspecified'}";
+    public static String ENTRY_URL = "https://appassets.androidplatform.net/assets/www/${entryRelative}";
+    public static String FALLBACK_ASSET_URL = "file:///android_asset/www/${entryRelative}";
+
+    public static boolean ENABLE_JAVASCRIPT = ${project.webviewConfig.enableJavaScript};
+    public static boolean ENABLE_DOM_STORAGE = ${project.webviewConfig.enableDomStorage};
+    public static boolean ENABLE_DATABASE = ${project.webviewConfig.enableLocalStorage};
+    public static boolean ENABLE_GEOLOCATION = ${project.webviewConfig.enableGeolocation};
+    public static boolean ENABLE_ZOOM = ${project.webviewConfig.enableZoom};
+    public static boolean ENABLE_FILE_UPLOAD = ${project.webviewConfig.enableFileUpload};
+    public static boolean ENABLE_CAMERA = ${project.webviewConfig.enableCameraAccess};
+    public static boolean ENABLE_MICROPHONE = ${project.webviewConfig.enableMicrophoneAccess};
+    public static boolean ENABLE_DOWNLOADS = ${project.webviewConfig.enableDownloadSupport};
+    public static boolean ENABLE_PULL_TO_REFRESH = true;
+    public static boolean ALLOW_EXTERNAL_LINKS = ${project.webviewConfig.enableExternalLinks};
+    public static boolean OPEN_EXTERNAL_IN_BROWSER = true;
+    public static boolean OFFLINE_CACHE_ENABLED = ${project.webviewConfig.enableOfflineMode};
+
+    private static boolean initialized = false;
 
     private AppConfig() {}
+
+    public static synchronized void init(Context context) {
+        if (initialized) return;
+        try {
+            InputStream is = context.getAssets().open("app-config.json");
+            byte[] buffer = new byte[is.available()];
+            int bytesRead = is.read(buffer);
+            is.close();
+            if (bytesRead > 0) {
+                String jsonStr = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
+                JSONObject obj = new JSONObject(jsonStr);
+
+                if (obj.has("appName")) APP_NAME = obj.getString("appName");
+                if (obj.has("orientation")) ORIENTATION = obj.getString("orientation");
+                if (obj.has("entryPoint")) {
+                    String entry = obj.getString("entryPoint");
+                    if (entry.startsWith("http://") || entry.startsWith("https://")) {
+                        ENTRY_URL = entry;
+                        FALLBACK_ASSET_URL = entry;
+                    } else {
+                        String clean = entry.startsWith("/") ? entry.substring(1) : entry;
+                        ENTRY_URL = "https://appassets.androidplatform.net/assets/www/" + clean;
+                        FALLBACK_ASSET_URL = "file:///android_asset/www/" + clean;
+                    }
+                }
+                if (obj.has("enableJavaScript")) ENABLE_JAVASCRIPT = obj.getBoolean("enableJavaScript");
+                if (obj.has("enableDomStorage")) ENABLE_DOM_STORAGE = obj.getBoolean("enableDomStorage");
+                if (obj.has("enableDatabase")) ENABLE_DATABASE = obj.getBoolean("enableDatabase");
+                if (obj.has("enableGeolocation")) ENABLE_GEOLOCATION = obj.getBoolean("enableGeolocation");
+                if (obj.has("enableZoom")) ENABLE_ZOOM = obj.getBoolean("enableZoom");
+                if (obj.has("enableFileUpload")) ENABLE_FILE_UPLOAD = obj.getBoolean("enableFileUpload");
+                if (obj.has("enableCamera")) ENABLE_CAMERA = obj.getBoolean("enableCamera");
+                if (obj.has("enableMicrophone")) ENABLE_MICROPHONE = obj.getBoolean("enableMicrophone");
+                if (obj.has("enableDownloads")) ENABLE_DOWNLOADS = obj.getBoolean("enableDownloads");
+                if (obj.has("enablePullToRefresh")) ENABLE_PULL_TO_REFRESH = obj.getBoolean("enablePullToRefresh");
+                if (obj.has("allowExternalLinks")) ALLOW_EXTERNAL_LINKS = obj.getBoolean("allowExternalLinks");
+                if (obj.has("openExternalInBrowser")) OPEN_EXTERNAL_IN_BROWSER = obj.getBoolean("openExternalInBrowser");
+                if (obj.has("offlineCacheEnabled")) OFFLINE_CACHE_ENABLED = obj.getBoolean("offlineCacheEnabled");
+            }
+        } catch (Exception ignored) {
+        }
+        initialized = true;
+    }
 }
 `;
     const appConfigPath = path.join(buildDir, 'app', 'src', 'main', 'java', 'com', 'htmltoapk', 'template', 'AppConfig.java');
     fs.writeFileSync(appConfigPath, appConfigJava);
+
+    // Also write assets/app-config.json
+    const assetsDir = path.join(buildDir, 'app', 'src', 'main', 'assets');
+    fs.mkdirSync(assetsDir, { recursive: true });
+    const appConfigJson = {
+      appName: project.name,
+      orientation: project.orientation || 'unspecified',
+      entryPoint: project.entryPoint.replace(/\\/g, '/'),
+      enableJavaScript: project.webviewConfig.enableJavaScript,
+      enableDomStorage: project.webviewConfig.enableDomStorage,
+      enableDatabase: project.webviewConfig.enableLocalStorage,
+      enableGeolocation: project.webviewConfig.enableGeolocation,
+      enableZoom: project.webviewConfig.enableZoom,
+      enableFileUpload: project.webviewConfig.enableFileUpload,
+      enableCamera: project.webviewConfig.enableCameraAccess,
+      enableMicrophone: project.webviewConfig.enableMicrophoneAccess,
+      enableDownloads: project.webviewConfig.enableDownloadSupport,
+      enablePullToRefresh: true,
+      allowExternalLinks: project.webviewConfig.enableExternalLinks,
+      openExternalInBrowser: true,
+      offlineCacheEnabled: project.webviewConfig.enableOfflineMode
+    };
+    fs.writeFileSync(path.join(assetsDir, 'app-config.json'), JSON.stringify(appConfigJson, null, 2), 'utf-8');
 
     // 7. Inject website files into assets/www
     const assetsWwwDir = path.join(buildDir, 'app', 'src', 'main', 'assets', 'www');
